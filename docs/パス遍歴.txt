@@ -1,0 +1,9 @@
+WatchAndTransform\\TextFolder
+WatchAndTransform\\EndFileFolder
+WatchAndTransform\\temp
+Hoge.end
+
+Hoge.end→Hoge
+WatchAndTransform\\TextFolder+\\+Hoge+.txt→WatchAndTransform\\TextFolder\\Hoge.txt→オブジェクト化
+WatchAndTransform\\temp+\\+Hoge+.txt→WatchAndTransform\\temp\\Hoge.txt→オブジェクト化
+
