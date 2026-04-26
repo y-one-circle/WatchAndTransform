@@ -4,6 +4,9 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import com.example.demo.Service.TextCopy;
 import com.example.demo.Service.TextEditor;
+import com.example.demo.Service.TextRenamePaste;
+import com.example.demo.Service.XENDGenerator;
+import com.example.demo.Service.XENDPaste;
 
 public class ServiceProcess {
 
@@ -12,7 +15,7 @@ public class ServiceProcess {
         
         ServiceProcess SP = new ServiceProcess();
 
-        //Path生成とTextCopy
+        //TextCopy
         Path copysource_object= SP.resolveTxtPathFromEndFile(endfileName, textFolderPath);
         Path copytarget_object = SP.resolveCopytargetPath(endfileName,tempFolderPath);
         TextCopy TP = new TextCopy();
@@ -21,13 +24,29 @@ public class ServiceProcess {
         //TextEdit
         TextEditor TE = new  TextEditor();
         TE.textedit(copytarget_object);
+
+        //TextRenamePaste
+        Path text_renametarget_Object = SP.resolveRenameTargetPath(textFolderPath, SP.remove_extension(endfileName));
+        TextRenamePaste TRP = new TextRenamePaste();
+        TRP.textrenamepaste(copytarget_object, text_renametarget_Object);
+
+        //XENDファイルの生成
+        Path XEND_generateTarget_Object = SP.resolve_generateTargetXENDPath(tempFolderPath, SP.remove_extension(endfileName));
+        XENDGenerator XG = new XENDGenerator();
+        XG.xendgenerator(XEND_generateTarget_Object, returnCode);
+
+        //XENDファイルのペースト
+        Path XEND_pasteTargetPath_Object = SP.resolve_pasteTargetXENDPath(endFolderPath, SP.remove_extension(endfileName));
+        XENDPaste XP = new XENDPaste();
+        XP.xendpaste(XEND_generateTarget_Object, XEND_pasteTargetPath_Object);
     }
 
     //フィールド変数（仮）上位クラスからの情報
-    static String textFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\TextFolder";
-    static String endFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\EndFileFolder";
-    static String tempFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\tempFolder";
-    static String endfileName = "Hoge2.end";
+    static String textFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\textFileFolder";
+    static String endFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\endFileFolder";
+    static String tempFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\tempFileFolder";
+    static String endfileName = "Hoge.end";
+    static String returnCode = "0";
 
     //インスタンスメソッド 
     //拡張子を除くメソッド
@@ -52,5 +71,23 @@ public class ServiceProcess {
         System.out.println(txtfilePath_String); //確認用
         Path txtfilePath_Object = Paths.get(txtfilePath_String);
         return txtfilePath_Object;
+    }
+    //RenameしてPasteするファイルのパスオブジェクトを返す
+    Path resolveRenameTargetPath(String textFolderPath, String fileName){
+        String renameTargetTextPath_String = textFolderPath + "\\" + fileName +"_Suffix.txt";
+        Path renameTargetTextPath_Object = Paths.get(renameTargetTextPath_String);
+        return renameTargetTextPath_Object;
+    }
+    //FFENDファイルの生成先パスオブジェクトを返す
+    Path resolve_generateTargetXENDPath(String tempFileFolder, String fileName){
+        String generateTargetPath_String = tempFileFolder + "\\" + fileName + ".XEND";
+        Path generateTargetPath_PathObject = Paths.get(generateTargetPath_String);
+        return generateTargetPath_PathObject;
+    }
+    //FFENDファイルのペースト先パスオブジェクトを返す
+    Path resolve_pasteTargetXENDPath(String endFolderPath, String FileName){
+        String pasteTargetXENDPath_String = endFolderPath + "\\" + FileName + ".XEND";
+        Path pasteTargetXENDPath_PathObject = Paths.get(pasteTargetXENDPath_String);
+        return pasteTargetXENDPath_PathObject;
     }
 }

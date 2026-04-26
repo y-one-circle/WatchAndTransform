@@ -1,19 +1,13 @@
 HogeHoge
 Hello, Wprld!!
 Name    PODID_Hoge_Suffix
-DataNumber 13;
+DataNumber 7;
 Apple, Orange, Grape
-DataList 13
+DataList 7
 1 alpha 7342 false 0.91
 2 bravo 1208 true 3.47
 3 charlie 5561 false 8.02
 4 delta 9874 true 1.55
 5 echo 3317 false 6.78
 6 foxtrot 6603 true 2.34
-7 golf 4129 false 9.61
-8 hotel 8850 true 0.17
-9 india 2741 false 5.43
-10 juliet 7095 true 7.89
-12 kilo 3482 false 4.26
-13 lima 9016 true 1.73
-14 mike 5234 false 6.50;
+7 golf 4129 false 9.61;
