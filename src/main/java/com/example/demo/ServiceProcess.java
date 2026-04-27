@@ -8,13 +8,16 @@ import com.example.demo.Service.TextRenamePaste;
 import com.example.demo.Service.XENDGenerator;
 import com.example.demo.Service.XENDPaste;
 
+import org.springframework.stereotype.Service;
+
+@Service  //SplingBootに認識されるようになった
 public class ServiceProcess {
 
     //テスト用メインメソッド
-    public static void main(String[] args){
-        
-        ServiceProcess SP = new ServiceProcess();
+    //public static void main(String[] args){
+    public void execute(Path endFilePath, String endFolderPath, String txt_Folder_Path, String TempFolder, String ReturnCode) {
 
+        ServiceProcess SP = new ServiceProcess();
         //TextCopy
         Path copysource_object= SP.resolveTxtPathFromEndFile(endfileName, textFolderPath);
         Path copytarget_object = SP.resolveCopytargetPath(endfileName,tempFolderPath);
