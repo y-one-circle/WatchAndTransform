@@ -6,7 +6,9 @@ public class WXExecuteRequest {
     private String txtFolderPath;
     private String tempFolderPath;
     private String returnCode;
+    private String suffixMode;
 
+    //EndfileFolderPath=====================================================================================================================
     public String getEndfileFolderPath() {
         return endfileFolderPath;
     }
@@ -22,15 +24,17 @@ public class WXExecuteRequest {
             this.endfileFolderPath = "";
             return; //空文字だったらすぐ返す
         }
-        //この時点でnullと空文字は無し
+        /*
         String normalizedEndFileFolderPtah = endfileFolderPath.replace("\"", "");  //"を消す
         char lastChar = normalizedEndFileFolderPtah.charAt(normalizedEndFileFolderPtah.length() -1);    //最後の文字が"であるかチェック
                 if (lastChar != '\\') { //最後の文字が"でないなら付け足す
                     normalizedEndFileFolderPtah = normalizedEndFileFolderPtah + "\\";
                 }
-        this.endfileFolderPath = normalizedEndFileFolderPtah;
+        */
+        this.endfileFolderPath = endfileFolderPath;
     }
 
+    //TxtFolderPath=====================================================================================================================
     public String getTxtFolderPath() {
         return txtFolderPath;
     }
@@ -46,14 +50,16 @@ public class WXExecuteRequest {
             this.txtFolderPath = "";
             return; //空文字だったらすぐ返す
         }
+        /* 
         String normalizedTxtFolderPath = txtFolderPath.replace("\"", "");    //"を消す
         char lastChar = normalizedTxtFolderPath.charAt(normalizedTxtFolderPath.length() -1);    ////最後の文字が"であるかチェック
             if (lastChar != '\\') { //最後の文字が"でないなら付け足す
                 normalizedTxtFolderPath = normalizedTxtFolderPath + "\\";
             }
-        this.txtFolderPath = normalizedTxtFolderPath;
+        */
+        this.txtFolderPath = txtFolderPath;
     }
-
+    //TempFolderPath=====================================================================================================================
     public String getTempFolderPath() {
         return tempFolderPath;
     }
@@ -69,14 +75,16 @@ public class WXExecuteRequest {
             this.tempFolderPath = "";
             return; //空文字だったらすぐ返す
         }
+        /* 
         String normalizedTempFolderPath = tempFolderPath.replace("\"", "");    //"を消す
         char lastChar = normalizedTempFolderPath.charAt(normalizedTempFolderPath.length() -1);    ////最後の文字が"であるかチェック
             if(lastChar != '\\') { //最後の文字が"でないなら付け足す
                 normalizedTempFolderPath = normalizedTempFolderPath + "\\";
             }
-        this.tempFolderPath = normalizedTempFolderPath;
+        */
+        this.tempFolderPath = tempFolderPath;
     }
-
+    //ReturnCode=====================================================================================================================
     public String getReturnCode() {
         return returnCode;
     }
@@ -94,5 +102,12 @@ public class WXExecuteRequest {
         }
         this.returnCode = returnCode;
     }
+    //SuffixMode=====================================================================================================================
+    public String getSuffixMode() {
+        return suffixMode;
+    }
 
+    public void setSuffixMode(String suffixMode) {
+        this.suffixMode = suffixMode;
+    }
 }

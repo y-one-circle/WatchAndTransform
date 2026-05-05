@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.io.IOException;
 
 public class TextRenamePaste {
-    public void textrenamepaste(Path sourcePath, Path targetPath){
+    public void textrenamepaste(Path sourcePath, Path targetPath, String suffixMode){
     try{
         Files.move(sourcePath, targetPath);
     }catch(IOException e){
