@@ -1,25 +1,30 @@
 package com.example.demo;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.nio.file.FileSystem;
+//import java.io.InterruptedIOException;
+//import java.nio.file.FileSystem;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+//import java.nio.file.Paths;
 import java.nio.file.WatchService;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchEvent;
-import java.nio.file.Watchable;
+//import java.nio.file.Watchable;
 
 import org.springframework.stereotype.Component;
 
 import java.nio.file.FileSystems;
 
 import static java.nio.file.StandardWatchEventKinds.*;
-import static java.nio.file.WatchEvent.*;
+//import static java.nio.file.WatchEvent.*;
 
 //ほぼ参照https://qiita.com/opengl-8080/items/91a8ac36ab3d8600a529
 @Component
 public class Watcher {
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //ディレクトリを監視してファイル生成されたら、生成されてファイルのパスを返す
+    //return:Path
+    //Note:例外処理未実装
+    ///////////////////////////////////////////////////////////////////////////////////////
     public Path watcher(Path watchTargetPath) throws IOException, InterruptedException {
     System.out.println("[Watcher] start watching: " + watchTargetPath);//デバッグ
         WatchService watcher = FileSystems.getDefault().newWatchService();

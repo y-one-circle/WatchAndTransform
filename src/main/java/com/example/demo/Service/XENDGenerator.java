@@ -5,7 +5,12 @@ import java.nio.file.Path;
 import java.io.IOException;
 
 public class XENDGenerator {
-    public void xendgenerator(Path generateTargetPath, String ReturnCode){
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //REturnCodeが記載されたXENDファイルを指定のPathに生成する
+    //return:無し
+    //Note:例外処理未実装
+    ///////////////////////////////////////////////////////////////////////////////////////
+    public void xendGenerator(Path generateTargetPath, String ReturnCode){
     try{
     //空のXENDファイル作成
     Files.createFile(generateTargetPath);

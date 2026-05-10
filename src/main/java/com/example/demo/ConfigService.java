@@ -16,7 +16,7 @@ public class ConfigService {
         Paths.get(System.getProperty("user.dir"), "wx.properties");
 
     //設定ファイルを読み込むメソッド
-    public Properties loadproperties(){
+    public Properties loadProperties(){
         Properties props = new Properties();
         if (Files.exists(CONFIG_PATH)) {
             /*
@@ -33,7 +33,7 @@ public class ConfigService {
         return props;
     }
     //設定ファイルを保存するメソッド
-    public void saveproperties(WXExecuteRequest req) {
+    public void saveProperties(WXExecuteRequest req) {
         Properties props = new Properties();
 
         props.setProperty("endfileFolderPath", normalizeForProperties(req.getEndfileFolderPath()));

@@ -58,13 +58,13 @@ public class WXController {
     //設定を保存する
     @PostMapping("/config")
     public void  saveConfig(@RequestBody WXExecuteRequest dto) {
-        configService.saveproperties(dto);
+        configService.saveProperties(dto);
     }
 
     //起動時に設定を読み込む
     @GetMapping("/config")
     public WXExecuteRequest loadConfig(){
-        Properties props = configService.loadproperties();
+        Properties props = configService.loadProperties();
 
         WXExecuteRequest dto = new WXExecuteRequest();
         dto.setEndfileFolderPath(props.getProperty("endfileFolderPath", "")); 

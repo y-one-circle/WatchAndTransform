@@ -1,19 +1,19 @@
 package com.example.demo.Service;
 import java.nio.file.Path;
-import java.io.IOException;
 import java.nio.file.Files;
+import java.io.IOException;
 
-public class TextCopy {
+public class TextMove {
     ///////////////////////////////////////////////////////////////////////////////////////
-    //Psthオブジェクトを受け取ってコピーする
+    //Psthオブジェクトを受け取ってファイルを移動させる
     //return:無し
     //Note:例外処理未実装
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void copy(Path copysourcePath, Path copytargetPath){
-        try{
-            Files.copy(copysourcePath, copytargetPath);
-        } catch(IOException e){
-            e.printStackTrace();
+    public void textMove(Path sourcePath, Path targetPath, String suffixMode){
+    try{
+        Files.move(sourcePath, targetPath);
+    }catch(IOException e){
+        e.printStackTrace();
         }
     }
 }

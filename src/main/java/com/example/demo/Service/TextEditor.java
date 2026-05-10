@@ -8,11 +8,17 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class TextEditor {
-    public void textedit(Path textfilePath){
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //ファイルを編集して、ファイル名にSuffixを付ける
+    //return:無し
+    //Note:例外処理未実装、suffixを外部入力化
+    ///////////////////////////////////////////////////////////////////////////////////////
+    public void edit(Path textfilePath){
+
         //ハードコーディング
-        String sw_name = "Name";
+        String KEYWORD_NAME = "Name";
         String suffix = "_Suffix";
-        String sw_datanumber = "DataNumber";
+        String KEYWORD_DATA_NUMBER = "DataNumber";
         String sw_datalist = "DataList";
         int newDataNum = 0;
         int datalistRow = 0;
@@ -26,16 +32,16 @@ public class TextEditor {
                 String line = lines.get(i);
 
                 //"Name"がある行の最後の空白を消してSuffixを付け足す
-                if (line.contains(sw_name)){
+                if (line.contains(KEYWORD_NAME)){
                     String newline_name = line.stripTrailing() + suffix;
                     lines.set(i, newline_name);
                 }
                 //"DataNumber"がある行の値の数字を半分にする
-                else if (line.contains(sw_datanumber)){
-                    Pattern p_dn = Pattern.compile(Pattern.quote(sw_datanumber) + "\\s(\\d+)");
-                    Matcher m_dn = p_dn.matcher(line);
-                    if (m_dn.find()){
-                        String datanumStr = m_dn.group(1);
+                else if (line.contains(KEYWORD_DATA_NUMBER)){
+                    Pattern dataNumberPattern = Pattern.compile(Pattern.quote(KEYWORD_DATA_NUMBER) + "\\s(\\d+)");
+                    Matcher dataNumberMatcher = dataNumberPattern.matcher(line);
+                    if (dataNumberMatcher.find()){
+                        String datanumStr = dataNumberMatcher.group(1);
                         int originalDataNum = Integer.parseInt(datanumStr);
                         System.out.println("データ数は" + originalDataNum);
                         //DataNumが偶数なら単純に半分
@@ -47,11 +53,11 @@ public class TextEditor {
                             newDataNum = originalDataNum / 2 + 1;
                         }
                         System.out.println("新データ数は" + newDataNum);
-                        String newLine_newDataNum = m_dn.replaceFirst(sw_datanumber + " " + newDataNum);
+                        String newLine_newDataNum = dataNumberMatcher.replaceFirst(KEYWORD_DATA_NUMBER + " " + newDataNum);
                         lines.set(i, newLine_newDataNum);
                     }
                 }
-                //"DataList"がある行の値を新データ数に書き換える（sw_datanumberと同列のelse ifに修正）
+                //"DataList"がある行の値を新データ数に書き換える（KEYWORD_DATA_NUMBERと同列のelse ifに修正）
                 else if (line.contains(sw_datalist)){
                     datalistRow = i; //「DataList」という文字列のある行数を記録
                     Pattern p_dl = Pattern.compile(Pattern.quote(sw_datalist) + "\\s(\\d+)");
@@ -69,9 +75,9 @@ public class TextEditor {
             List<String> subList = lines.subList(0, deleteFromHere);
 
             //subListの最後の行の最後に;を付け足す
-            int lastRow_subList = subList.size() - 1;
-            String newLastRow = subList.get(lastRow_subList) + ";";
-            subList.set(lastRow_subList, newLastRow);
+            int lastIndex = subList.size() - 1;
+            String newLastRow = subList.get(lastIndex) + ";";
+            subList.set(lastIndex, newLastRow);
 
             //編集後のsubListをファイルに書き戻す
             Files.write(textfilePath, subList, StandardCharsets.UTF_8);

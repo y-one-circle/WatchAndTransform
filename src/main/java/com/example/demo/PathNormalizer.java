@@ -9,7 +9,7 @@ public class PathNormalizer {
         //"を削除
         String pathStringWithout = pathString.replace("\"", "");
         //String→Path
-        Path noromalizedPath = Paths.get(pathStringWithout);
-        return noromalizedPath;
+        Path normalizedPath = Paths.get(pathStringWithout);
+        return normalizedPath;
     } 
 }

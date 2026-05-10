@@ -4,7 +4,7 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import com.example.demo.Service.TextCopy;
 import com.example.demo.Service.TextEditor;
-import com.example.demo.Service.TextRenamePaste;
+import com.example.demo.Service.TextMove;
 import com.example.demo.Service.XENDGenerator;
 import com.example.demo.Service.XENDPaste;
 
@@ -23,34 +23,34 @@ public class ServiceProcess {
         String endfileName = endFilePath.getFileName().toString();
 
         //TextCopy
-        Path copysource_object= SP.resolveTxtPathFromEndFile(endfileName, textFolderPath);
-        Path copytarget_object = SP.resolveCopytargetPath(endfileName, tempFolderPath);
-        TextCopy TP = new TextCopy();
-        TP.copytext(copysource_object, copytarget_object);
+        Path copySource= SP.resolveTxtPathFromEndFile(endfileName, textFolderPath);
+        Path copyTarget = SP.resolveCopytargetPath(endfileName, tempFolderPath);
+        TextCopy TC = new TextCopy();
+        TC.copy(copySource, copyTarget);
 
         //TextEdit
         TextEditor TE = new  TextEditor();
-        TE.textedit(copytarget_object);
+        TE.edit(copyTarget);
 
         //TextRenamePaste
         Path text_renametarget_Object;
         if ("0".equals(suffixMode)) {
-            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode0(textFolderPath, SP.remove_extension(endfileName));
+            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode0(textFolderPath, SP.removeExtension(endfileName));
         } else {
-            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode1(textFolderPath, SP.remove_extension(endfileName));
+            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode1(textFolderPath, SP.removeExtension(endfileName));
         }
-        TextRenamePaste TRP = new TextRenamePaste();
-        TRP.textrenamepaste(copytarget_object, text_renametarget_Object, suffixMode);
+        TextMove TP = new TextMove();
+        TP.textMove(copyTarget, text_renametarget_Object, suffixMode);
 
         //XENDファイルの生成
-        Path XEND_generateTarget_Object = SP.resolve_generateTargetXENDPath(tempFolderPath, SP.remove_extension(endfileName));
+        Path xendGenerateTarget = SP.resolveGenerateTargetXendPath(tempFolderPath, SP.removeExtension(endfileName));
         XENDGenerator XG = new XENDGenerator();
-        XG.xendgenerator(XEND_generateTarget_Object, returnCode);
+        XG.xendGenerator(xendGenerateTarget, returnCode);
 
         //XENDファイルのペースト
-        Path XEND_pasteTargetPath_Object = SP.resolve_pasteTargetXENDPath(endFolderPath, SP.remove_extension(endfileName));
+        Path xendPasteTarget = SP.resolvePasteTargetXendPath(endFolderPath, SP.removeExtension(endfileName));
         XENDPaste XP = new XENDPaste();
-        XP.xendpaste(XEND_generateTarget_Object, XEND_pasteTargetPath_Object);
+        XP.xendPaste(xendGenerateTarget, xendPasteTarget);
     }
 
     //フィールド変数（仮）上位クラスからの情報
@@ -62,15 +62,15 @@ public class ServiceProcess {
 
     //インスタンスメソッド 
     //拡張子を除くメソッド
-    public String remove_extension(String absoPath){
+    public String removeExtension(String absoPath){
         File file = new File(absoPath);
-        String basename = file.getName();
-        String wotext = basename.substring(0, basename.lastIndexOf("."));
-        return wotext;
+        String fileName = file.getName();
+        String baseName = fileName.substring(0, fileName.lastIndexOf("."));
+        return baseName;
     }
     //検知したendファイルからコピーすべきtxtファイルのPathを返す
     Path resolveTxtPathFromEndFile(String fileName, Path txtfolderPath){
-        String fileName_without_extention = remove_extension(fileName);
+        String fileName_without_extention = removeExtension(fileName);
         String txtfolderPath_String = txtfolderPath.toString();
         String txtfilePath_String = txtfolderPath_String + "\\" + fileName_without_extention + ".txt";
         System.out.println(txtfilePath_String); //確認用
@@ -79,7 +79,7 @@ public class ServiceProcess {
     }
     //検知したendファイルからtxtファイルのコピー先のPathを返す
     Path resolveCopytargetPath(String fileName, Path tempfolderPath){
-        String fileName_without_extention = remove_extension(fileName);
+        String fileName_without_extention = removeExtension(fileName);
         String tempfolderPath_String = tempfolderPath.toString();
         String txtfilePath_String = tempfolderPath_String + "\\" + fileName_without_extention + ".txt";
         System.out.println(txtfilePath_String); //確認用
@@ -103,14 +103,14 @@ public class ServiceProcess {
         return renameTargetTextPath_Object;
     }
     //FFENDファイルの生成先パスオブジェクトを返す
-    Path resolve_generateTargetXENDPath(Path tempFileFolder, String fileName){
+    Path resolveGenerateTargetXendPath(Path tempFileFolder, String fileName){
         String tempFileFolder_String = tempFileFolder.toString();
         String generateTargetPath_String = tempFileFolder_String + "\\" + fileName + ".XEND";
         Path generateTargetPath_PathObject = Paths.get(generateTargetPath_String);
         return generateTargetPath_PathObject;
     }
     //FFENDファイルのペースト先パスオブジェクトを返す
-    Path resolve_pasteTargetXENDPath(Path endFolderPath, String FileName){
+    Path resolvePasteTargetXendPath(Path endFolderPath, String FileName){
         String endFolderPath_String = endFolderPath.toString();
         String pasteTargetXENDPath_String = endFolderPath_String + "\\" + FileName + ".XEND";
         Path pasteTargetXENDPath_PathObject = Paths.get(pasteTargetXENDPath_String);
