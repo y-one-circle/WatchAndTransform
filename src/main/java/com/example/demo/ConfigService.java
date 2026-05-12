@@ -15,15 +15,17 @@ public class ConfigService {
     private static final Path CONFIG_PATH =
         Paths.get(System.getProperty("user.dir"), "wx.properties");
 
-    //設定ファイルを読み込むメソッド
+    ////////////////////////////////////////////////////////////////////////////////////
+    //Propertyファイルを読み込む
+    //return:Properties
+    //Note:PropertyオブジェクトにInputStreamでキーバリュー情報を流し込む
+    ////////////////////////////////////////////////////////////////////////////////////
     public Properties loadProperties(){
         Properties props = new Properties();
         if (Files.exists(CONFIG_PATH)) {
-            /*
-            try-with-resources構文
-            try の中で使うリソース（今回は InputStream）を宣言すると、 
-            tryブロックを抜けると自動的にin.close()を呼ぶ
-            */
+            //try-with-resources構文
+            //try の中で使うリソース（今回は InputStream）を宣言すると、 
+            //tryブロックを抜けると自動的にin.close()を呼ぶ
             try (InputStream input = Files.newInputStream(CONFIG_PATH)) {
                 props.load(input);
             } catch (IOException e) {
@@ -32,7 +34,11 @@ public class ConfigService {
         }
         return props;
     }
-    //設定ファイルを保存するメソッド
+    ////////////////////////////////////////////////////////////////////////////////////
+    //Propertyファイルに保存する
+    //return:無し
+    //Note:PropertyオブジェクトにInputStreamでキーバリュー情報を流し込む
+    ////////////////////////////////////////////////////////////////////////////////////
     public void saveProperties(WXExecuteRequest req) {
         Properties props = new Properties();
 
@@ -48,7 +54,10 @@ public class ConfigService {
         }
     } 
 
-    // \\を//に置き換えるメソッド
+    ////////////////////////////////////////////////////////////////////////////////////
+    // "\\"を"//"に置き換える
+    //return:Path
+    ////////////////////////////////////////////////////////////////////////////////////
     private String normalizeForProperties(String path) {
         return path.replace("\\", "/");
     }

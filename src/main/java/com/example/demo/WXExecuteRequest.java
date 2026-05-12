@@ -46,7 +46,7 @@ public class WXExecuteRequest {
             return; //nullだったらすぐ返す
         }
         //空文字チェック
-        if (txtFolderPath == "") {
+        if (txtFolderPath.isEmpty()) {
             this.txtFolderPath = "";
             return; //空文字だったらすぐ返す
         }
@@ -71,7 +71,7 @@ public class WXExecuteRequest {
             return; //nullだったらすぐ返す
         }
         //空文字チェック
-        if (tempFolderPath == "") {
+        if (tempFolderPath.isEmpty()) {
             this.tempFolderPath = "";
             return; //空文字だったらすぐ返す
         }
@@ -96,7 +96,7 @@ public class WXExecuteRequest {
             return; //nullだったらすぐ返す
         }
         //空文字チェック
-        if (returnCode == "") {
+        if (returnCode.isEmpty()) {
             this.returnCode = "";
             return; //空文字だったらすぐ返す
         }

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Watch&Transform</title>
+ 
+  <!-- favicon -->
+  <link rel="icon" href="/akabeko.ico">
+  <link rel="stylesheet" href="/css/style.css">
+ 
+  <style>
+    #loading {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+ 
+<h1>Watch&Transform</h1>
+ 
+<img id="loading" src="/images/sample.gif" alt="loading">
+ 
+<div>
+  <label>endfileFolderPath</label><br>
+  <input id="endfileFolderPath" size="80">
+</div>
+ 
+<div>
+  <label>txtFolderPath</label><br>
+  <input id="txtFolderPath" size="80">
+</div>
+ 
+<div>
+  <label>tempFolderPath</label><br>
+  <input id="tempFolderPath" size="80">
+</div>
+ 
+<div>
+  <label>returnCode</label><br>
+  <input id="returnCode">
+</div>
+ 
+<br>
+<label>
+  <input type="radio" name="suffixmode" value="0" checked>
+    SuffixMode=0 　編集後のtxtにSuffixを付けて出力
+</label>
+<br>
+<label>
+  <input type="radio" name="suffixmode" value="1" >
+    SuffixMode=1 　編集後のtxtからSuffixを取って出力
+</label>
+<br>
+<br>
+<button onclick="saveConfig()">パス情報を記憶する</button>
+<button onclick="execute()">実行</button>
+ 
+<script>
+ 
+//起動時：設定ファイルから値を読み込んで入力欄に反映
+window.onload = async function () {
+  try {
+    const res = await fetch("/api/wx/config");
+    if (!res.ok) {
+      return;
+    }
+ 
+    const config = await res.json();
+ 
+    document.getElementById("endfileFolderPath").value = config.endfileFolderPath || "";
+    document.getElementById("txtFolderPath").value = config.txtFolderPath || "";
+    document.getElementById("tempFolderPath").value = config.tempFolderPath || "";
+    document.getElementById("returnCode").value = config.returnCode || "";
+ 
+  } catch (e) {
+    console.log("設定の読み込みに失敗しました", e);
+  }
+};
+ 
+//実行ボタン
+async function execute() {
+  // 処理中GIF表示
+  document.getElementById("loading").style.display = "block";
+ 
+  const body = {
+    endfileFolderPath: document.getElementById("endfileFolderPath").value,
+    txtFolderPath: document.getElementById("txtFolderPath").value,
+    tempFolderPath: document.getElementById("tempFolderPath").value,
+    returnCode: document.getElementById("returnCode").value,
+    suffixMode: document.querySelector('input[name="suffixmode"]:checked').value,
+  };
+ 
+  try {
+    const res = await fetch("/api/wx/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+ 
+    const text = await res.text();
+    alert(text);
+  } catch (e) {
+    alert("エラーが発生しました");
+  } finally {
+    document.getElementById("loading").style.display = "none";
+  }
+}
+ 
+//記憶するボタン：現在の入力値を properties に保存
+async function saveConfig() {
+  const body = {
+    endfileFolderPath: document.getElementById("endfileFolderPath").value,
+    txtFolderPath: document.getElementById("txtFolderPath").value,
+    tempFolderPath: document.getElementById("tempFolderPath").value,
+    returnCode: document.getElementById("returnCode").value
+  };
+ 
+  try {
+    const res = await fetch("/api/wx/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+ 
+    if (res.ok) {
+      alert("設定を記憶しました");
+    } else {
+      alert("設定の保存に失敗しました");
+    }
+  } catch (e) {
+    alert("設定の保存に失敗しました");
+  }
+}
+</script>
+ 
+</body>
+</html>
