@@ -1,30 +1,65 @@
-package com.example.demo;
+package io.github.yonecircle.watchtransform;
 import java.io.File;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import com.example.demo.Service.TextCopy;
-import com.example.demo.Service.TextEditor;
-import com.example.demo.Service.TextMove;
-import com.example.demo.Service.XENDGenerator;
-import com.example.demo.Service.XENDPaste;
+import io.github.yonecircle.watchtransform.Service.TextCopy;
+import io.github.yonecircle.watchtransform.Service.TextEditor;
+import io.github.yonecircle.watchtransform.Service.TextMove;
+import io.github.yonecircle.watchtransform.Service.XENDGenerator;
+import io.github.yonecircle.watchtransform.Service.XENDPaste;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-@Service  //SplingBootに認識されるようになった
+@Service
+
 public class ServiceProcess {
 
-    //テスト用メインメソッド
-    //public static void main(String[] args){
-    public void execute(Path endFilePath, Path endFolderPath, Path textFolderPath, Path tempFolderPath, String returnCode, String suffixMode) {
+    private final StatusHolder statusHolder;
+    private final Watcher watcher;
 
-        ServiceProcess SP = new ServiceProcess();
+    public ServiceProcess(StatusHolder statusHolder, Watcher watcher) {
+        this.statusHolder = statusHolder;
+        this.watcher = watcher;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    //監視→WX実行までを非同期でまとめて行うメソッド
+    //return:無し
+    //Notes:Controllerはこのメソッドを呼んで即returnする
+    ////////////////////////////////////////////////////////////////////////////////////
+    @Async
+    public void watchAndExecute(Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
+        try {
+            // 監視開始
+            statusHolder.setStatus(WXStatus.WATCHING);
+            Path detectedEndFilePath = watcher.watcher(endFileDir);
+
+            // 変換処理開始
+            statusHolder.setStatus(WXStatus.PROCESSING);
+            execute(detectedEndFilePath, endFileDir, resultFileDir, tempFileDir, returnCode, suffixMode);
+
+            //完了
+            statusHolder.setStatus(WXStatus.COMPLETED);
+
+        } catch (Exception e) {
+            statusHolder.setStatus(WXStatus.ERROR);
+            e.printStackTrace();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    //WX実行のサービスにパスを渡して実行するメソッド
+    //return:無し
+    ////////////////////////////////////////////////////////////////////////////////////
+    public void execute(Path endFilePath, Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
 
         //endFilePathからendFileNameを取り出す
         String endfileName = endFilePath.getFileName().toString();
 
         //TextCopy
-        Path copySource= SP.resolveTxtPathFromEndFile(endfileName, textFolderPath);
-        Path copyTarget = SP.resolveCopytargetPath(endfileName, tempFolderPath);
+        Path copySource= this.resolveTxtPathFromEndFile(endfileName, resultFileDir);
+        Path copyTarget = this.resolveCopytargetPath(endfileName, tempFileDir);
         TextCopy TC = new TextCopy();
         TC.copy(copySource, copyTarget);
 
@@ -32,35 +67,36 @@ public class ServiceProcess {
         TextEditor TE = new  TextEditor();
         TE.edit(copyTarget);
 
-        //TextRenamePaste
+        /*
+        TextRenamePaste
+        SuffixModeによって処理が変わる
+        SuffixMode=0:WX処理完了後に"_WX"Suffixをテキストファイルにつける
+        SuffixMode=1:WX処理完了後にSuffixをテキストファイルから取り除く
+        */
         Path text_renametarget_Object;
         if ("0".equals(suffixMode)) {
-            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode0(textFolderPath, SP.removeExtension(endfileName));
+            text_renametarget_Object = this.resolveRenameTargetPathSuffixMode0(resultFileDir, this.removeExtension(endfileName));
         } else {
-            text_renametarget_Object = SP.resolveRenameTargetPathSuffixMode1(textFolderPath, SP.removeExtension(endfileName));
+            text_renametarget_Object = this.resolveRenameTargetPathSuffixMode1(resultFileDir, this.removeExtension(endfileName));
         }
         TextMove TP = new TextMove();
         TP.textMove(copyTarget, text_renametarget_Object, suffixMode);
 
         //XENDファイルの生成
-        Path xendGenerateTarget = SP.resolveGenerateTargetXendPath(tempFolderPath, SP.removeExtension(endfileName));
+        Path xendGenerateTarget = this.resolveGenerateTargetXendPath(tempFileDir, this.removeExtension(endfileName));
         XENDGenerator XG = new XENDGenerator();
         XG.xendGenerator(xendGenerateTarget, returnCode);
 
         //XENDファイルのペースト
-        Path xendPasteTarget = SP.resolvePasteTargetXendPath(endFolderPath, SP.removeExtension(endfileName));
+        Path xendPasteTarget = this.resolvePasteTargetXendPath(endFileDir, this.removeExtension(endfileName));
         XENDPaste XP = new XENDPaste();
         XP.xendPaste(xendGenerateTarget, xendPasteTarget);
     }
 
-    //フィールド変数（仮）上位クラスからの情報
-    //static String textFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\textFileFolder";
-    //static String endFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\endFileFolder";
-    //static String tempFolderPath = "C:\\Users\\Device2\\workspace\\WatchAndTransform\\tempFileFolder";
-    //static String endfileName = "Hoge.end";
-    //static String returnCode = "0";
 
-    //インスタンスメソッド 
+    ////////////////////////////////////////////////////////////////////////////////////
+    //以下パス解決のための補助メソッド群
+    ////////////////////////////////////////////////////////////////////////////////////
     //拡張子を除くメソッド
     public String removeExtension(String absoPath){
         File file = new File(absoPath);

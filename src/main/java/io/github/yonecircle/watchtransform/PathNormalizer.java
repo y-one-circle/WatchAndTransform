@@ -1,4 +1,4 @@
-package com.example.demo;
+package io.github.yonecircle.watchtransform;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

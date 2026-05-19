@@ -1,4 +1,4 @@
-package com.example.demo;
+package io.github.yonecircle.watchtransform;
 
 public class WXExecuteRequest {
     

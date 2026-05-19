@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>executionStatus</title>
+</head>
+<body>
+
+  <h1>Watch&Transform</h1>
+  <!-- ★変更：idを付けてJSから書き換えられるようにする -->
+  <p id="statusMessage">状態を取得中...</p>
+
+  <script>
+    // ★新規追加：ステータスとメッセージのマッピング
+    const statusMessages = {
+      "WAITING":    "待機中",
+      "WATCHING":   "監視中",
+      "PROCESSING": "変換処理実行中",
+      "COMPLETED":  "WX完了",
+      "ERROR":      "エラーが発生しました"
+    };
+
+    // ★新規追加：2秒ごとにポーリング
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch("/api/wx/status");
+        const status = await res.text();
+
+        // 取得したステータスに対応する日本語を表示
+        document.getElementById("statusMessage").textContent =
+          statusMessages[status] || status;
+
+        // 終了状態になったらポーリングを止める
+        if (status === "COMPLETED" || status === "ERROR") {
+          clearInterval(intervalId);
+        }
+
+      } catch (e) {
+        document.getElementById("statusMessage").textContent = "状態の取得に失敗しました";
+        clearInterval(intervalId);
+      }
+    }, 2000);
+  </script>
+
+</body>
+</html>

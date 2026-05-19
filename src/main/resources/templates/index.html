@@ -79,9 +79,8 @@ window.onload = async function () {
  
 //実行ボタン
 async function execute() {
-  // 処理中GIF表示
   document.getElementById("loading").style.display = "block";
- 
+
   const body = {
     endfileFolderPath: document.getElementById("endfileFolderPath").value,
     txtFolderPath: document.getElementById("txtFolderPath").value,
@@ -89,16 +88,20 @@ async function execute() {
     returnCode: document.getElementById("returnCode").value,
     suffixMode: document.querySelector('input[name="suffixmode"]:checked').value,
   };
- 
+
   try {
     const res = await fetch("/api/wx/execute", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
- 
-    const text = await res.text();
-    alert(text);
+
+    if (res.ok) {
+      // ★修正：alertではなくexecutionStatus画面に遷移する
+      window.location.href = "/executionStatus";
+    } else {
+      alert("実行の開始に失敗しました");
+    }
   } catch (e) {
     alert("エラーが発生しました");
   } finally {

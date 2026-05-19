@@ -8,10 +8,10 @@
 		<version>3.5.14-SNAPSHOT</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>WatchAndTransform</artifactId>
+	<groupId>io.github.yonecircle</groupId>
+	<artifactId>watchtransform</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>WatchAndTransform</name>
+	<name>wx</name>
 	<description/>
 	<url/>
 	<licenses>
