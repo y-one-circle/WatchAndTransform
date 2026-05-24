@@ -1,19 +1,24 @@
 package io.github.yonecircle.watchtransform.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import io.github.yonecircle.watchtransform.exception.WXException;
+
 import java.io.IOException;
 
 public class XENDPaste {
     ///////////////////////////////////////////////////////////////////////////////////////
     //XENDGeneratorで生成されたXENDファイルを指定のパスに移動する
     //return:無し
-    //Note:例外処理未実装
     ///////////////////////////////////////////////////////////////////////////////////////
     public void xendPaste(Path sourcePath, Path targetPath){
+    //例外処理テスト用
+        //throw new WXException("XENDファイルの移動に失敗しました", null);/*
     try{
         Files.move(sourcePath, targetPath);
-    }catch(IOException e){
-        e.printStackTrace();
+    }catch(IOException ioEx){
+        throw new WXException("XENDファイルの移動に失敗しました", ioEx);
         }
+        
     }   
 }

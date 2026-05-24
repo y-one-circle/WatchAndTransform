@@ -7,6 +7,7 @@ import io.github.yonecircle.watchtransform.Service.TextEditor;
 import io.github.yonecircle.watchtransform.Service.TextMove;
 import io.github.yonecircle.watchtransform.Service.XENDGenerator;
 import io.github.yonecircle.watchtransform.Service.XENDPaste;
+import io.github.yonecircle.watchtransform.exception.WXException;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -27,9 +28,11 @@ public class ServiceProcess {
     //監視→WX実行までを非同期でまとめて行うメソッド
     //return:無し
     //Notes:Controllerはこのメソッドを呼んで即returnする
+    //Note:非同期処理の一番上のため、エラー発生時にはこのメソッドで対処する
     ////////////////////////////////////////////////////////////////////////////////////
     @Async
-    public void watchAndExecute(Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
+    public void watchAndTransform
+        (Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
         try {
             // 監視開始
             statusHolder.setStatus(WXStatus.WATCHING);
@@ -37,22 +40,34 @@ public class ServiceProcess {
 
             // 変換処理開始
             statusHolder.setStatus(WXStatus.PROCESSING);
-            execute(detectedEndFilePath, endFileDir, resultFileDir, tempFileDir, returnCode, suffixMode);
+            transform(detectedEndFilePath, endFileDir, resultFileDir, tempFileDir, returnCode, suffixMode);
 
             //完了
             statusHolder.setStatus(WXStatus.COMPLETED);
 
+        } catch (WXException wxEx) {
+            statusHolder.setStatus(WXStatus.ERROR);
+            statusHolder.setErrorMessage(wxEx.getMessage());
+            System.err.println("業務エラー：" + wxEx.getMessage());
+
         } catch (Exception e) {
             statusHolder.setStatus(WXStatus.ERROR);
+            statusHolder.setErrorMessage("予期しないエラー");
+
+            System.err.println("想定外エラー");
             e.printStackTrace();
+
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
     //WX実行のサービスにパスを渡して実行するメソッド
     //return:無し
+    //Note:エラー発生時にはwatchAndTransformメソッドにエラーメッセージとThrowableを投げる
     ////////////////////////////////////////////////////////////////////////////////////
-    public void execute(Path endFilePath, Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
+    public void transform
+        (Path endFilePath, Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) 
+        throws Exception {
 
         //endFilePathからendFileNameを取り出す
         String endfileName = endFilePath.getFileName().toString();

@@ -9,6 +9,9 @@ import java.io.OutputStream;
 
 import org.springframework.stereotype.Service;
 
+import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
+import io.github.yonecircle.watchtransform.exception.WXException;
+
 @Service
 public class ConfigService {
     //このアプリを起動したディレクトリを取得して、その中に wx.properties というファイルのパスを作る
@@ -28,8 +31,8 @@ public class ConfigService {
             //tryブロックを抜けると自動的にin.close()を呼ぶ
             try (InputStream input = Files.newInputStream(CONFIG_PATH)) {
                 props.load(input);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ioEx) {
+                throw new WXException("プロパティファイルの読み込みに失敗しました", ioEx);
             }
         }
         return props;
@@ -49,8 +52,8 @@ public class ConfigService {
 
         try (OutputStream output = Files.newOutputStream(CONFIG_PATH)) {
             props.store(output, "wx config");
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioEx) {
+            throw new WXException("プロパティファイルの保存に失敗しました", ioEx);
         }
     } 
 

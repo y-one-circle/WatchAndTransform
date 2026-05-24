@@ -1,10 +1,10 @@
-package com.example.demo;
+package com.example.ff2;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WatchAndTransformApplicationTests {
+class Ff2ApplicationTests {
 
 	@Test
 	void contextLoads() {

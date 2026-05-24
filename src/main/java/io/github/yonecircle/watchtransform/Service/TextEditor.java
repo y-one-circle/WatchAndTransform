@@ -5,13 +5,16 @@ import java.nio.file.Path;
 import java.util.List;
 import java.io.IOException;
 import java.util.regex.Pattern;
+
+import io.github.yonecircle.watchtransform.exception.WXException;
+
 import java.util.regex.Matcher;
 
 public class TextEditor {
     ///////////////////////////////////////////////////////////////////////////////////////
     //ファイルを編集して、ファイル名にSuffixを付ける
     //return:無し
-    //Note:例外処理未実装、suffixを外部入力化
+    //Note:suffixを外部入力化
     ///////////////////////////////////////////////////////////////////////////////////////
     public void edit(Path textfilePath){
 
@@ -22,6 +25,9 @@ public class TextEditor {
         String sw_datalist = "DataList";
         int newDataNum = 0;
         int datalistRow = 0;
+
+        //例外処理テスト用
+        //throw new WXException("テキストファイルの読み込みに失敗しました", null);/*
 
         //テキストファイルをメモリに一括読み込み
         try{
@@ -82,8 +88,9 @@ public class TextEditor {
             //編集後のsubListをファイルに書き戻す
             Files.write(textfilePath, subList, StandardCharsets.UTF_8);
 
-        }catch(IOException e){
-            e.printStackTrace();
+        }catch(IOException ioEx){
+            throw new WXException("テキストファイルの読み込みに失敗しました" ,ioEx);
         }
+        //ここにコメントブロック
     }
 }

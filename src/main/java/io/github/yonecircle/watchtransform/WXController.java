@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import io.github.yonecircle.watchtransform.dto.StatusResponse;
+import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
+
 @Controller
 public class WXController {
 
@@ -65,15 +68,14 @@ public class WXController {
         System.out.println("returnCode        = " + dto.getReturnCode());
         System.out.println("suffixMode        = " + dto.getSuffixMode());
 
-        try {
             //ユーザ入力String→ロジック用正規化Path
-            PathNormalizer normalizer = new PathNormalizer();
+            //PathNormalizer normalizer = new PathNormalizer();
             Path endFileDir    = Paths.get(dto.getEndfileFolderPath());
             Path resultFileDir = Paths.get(dto.getTxtFolderPath());
             Path tempFileDir   = Paths.get(dto.getTempFolderPath());
 
-            //watchAndExecuteを呼ぶだけで即returnする（@Asyncで別スレッド実行）
-            serviceProcess.watchAndExecute(
+            //watchAndTransformを呼ぶだけで即returnする（@Asyncで別スレッド実行）
+            serviceProcess.watchAndTransform(
                 endFileDir,
                 resultFileDir,
                 tempFileDir,
@@ -81,20 +83,20 @@ public class WXController {
                 dto.getSuffixMode());
 
             return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    //JSのポーリングに対して現在のステータスを返す
+    //JavaScriptのポーリングに対して現在のステータスを返す
     //return:String（WXStatusのenum名）
     ////////////////////////////////////////////////////////////////////////////////////
     @GetMapping("/api/wx/status")
     @ResponseBody
-    public String getStatus() {
-        return statusHolder.getStatus().name();
+    public StatusResponse getStatus() {
+        StatusResponse res = new StatusResponse();
+        res.setStatus(statusHolder.getStatus());
+        res.setMessage(statusHolder.getErrorMessage());
+
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
