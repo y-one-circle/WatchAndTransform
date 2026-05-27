@@ -9,24 +9,24 @@ import io.github.yonecircle.watchtransform.dto.StatusResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    //プロパティファイルのロードに失敗した時のエラーハンドル
-    @ExceptionHandler(WXException.class)
-    public ResponseEntity<StatusResponse> handleFailLoadProperties(WXException wxEx) {
+    //Validationエラーハンドル
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<StatusResponse> handleValidationException(ValidationException validationEx) {
         
         StatusResponse res = new StatusResponse();
-        res.setStatus(WXStatus.ERROR);
-        res.setMessage(wxEx.getMessage());
+        res.setStatus(WXStatus.SYSTEM_ERROR);
+        res.setMessage(validationEx.getMessage());
 
-        return ResponseEntity.internalServerError().body(res);
+        return ResponseEntity.badRequest().body(res);
     }
 
-    //プロパティファイルのセーブに失敗した時のエラーハンドル
-    @ExceptionHandler(WXException.class)
-    public ResponseEntity<StatusResponse> handleFailSaveProperties(WXException wxEx) {
+    //Systemエラーハンドル
+    @ExceptionHandler(SystemException.class)
+    public ResponseEntity<StatusResponse> handleSystemException(SystemException systemEx) {
 
         StatusResponse res = new StatusResponse();
-        res.setStatus(WXStatus.ERROR);
-        res.setMessage(wxEx.getMessage());
+        res.setStatus(WXStatus.SYSTEM_ERROR);
+        res.setMessage(systemEx.getMessage());
 
         return ResponseEntity.internalServerError().body(res);
     }

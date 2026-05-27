@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import io.github.yonecircle.watchtransform.dto.StatusResponse;
 import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
+import io.github.yonecircle.watchtransform.exception.SystemException;
+import io.github.yonecircle.watchtransform.exception.ValidationException;
 
 @Controller
 public class WXController {
@@ -60,6 +62,19 @@ public class WXController {
     @ResponseBody
     public ResponseEntity<Void> execute(@RequestBody WXExecuteRequest dto) {
 
+        if (dto.getEndfileFolderPath() == null || dto.getEndfileFolderPath().isEmpty()) {
+            throw new ValidationException("監視フォルダのパスは入力されていません");
+        }
+        if (dto.getTxtFolderPath() == null || dto.getTxtFolderPath().isEmpty()) {
+            throw new ValidationException("テキストフォルダのパスは入力されていません");
+        }
+        if (dto.getTempFolderPath() == null || dto.getTempFolderPath().isEmpty()) {
+            throw new ValidationException("一時フォルダのパスは入力されていません");
+        }
+        if (dto.getReturnCode() == null || dto.getReturnCode().isEmpty()) {
+            throw new ValidationException("リターンコードが入力されていません");
+        }
+
         //確認用
         System.out.println("=== execute() called ===");
         System.out.println("endfileFolderPath = " + dto.getEndfileFolderPath());
@@ -106,7 +121,7 @@ public class WXController {
     ////////////////////////////////////////////////////////////////////////////////////
     @GetMapping("/api/wx/config")
     @ResponseBody
-    public WXExecuteRequest loadConfig() {
+    public WXExecuteRequest loadConfig() throws SystemException {
         Properties props = configService.loadProperties();
 
         WXExecuteRequest dto = new WXExecuteRequest();
@@ -125,7 +140,7 @@ public class WXController {
     ////////////////////////////////////////////////////////////////////////////////////
     @PostMapping("/api/wx/config")
     @ResponseBody
-    public void saveConfig(@RequestBody WXExecuteRequest dto) {
+    public void saveConfig(@RequestBody WXExecuteRequest dto) throws SystemException {
         configService.saveProperties(dto);
     }
 }

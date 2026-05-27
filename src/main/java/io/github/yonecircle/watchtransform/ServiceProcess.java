@@ -1,13 +1,16 @@
 package io.github.yonecircle.watchtransform;
 import java.io.File;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import io.github.yonecircle.watchtransform.Service.TextCopy;
 import io.github.yonecircle.watchtransform.Service.TextEditor;
 import io.github.yonecircle.watchtransform.Service.TextMove;
 import io.github.yonecircle.watchtransform.Service.XENDGenerator;
 import io.github.yonecircle.watchtransform.Service.XENDPaste;
-import io.github.yonecircle.watchtransform.exception.WXException;
+
+import io.github.yonecircle.watchtransform.exception.ValidationException;
+import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -33,10 +36,23 @@ public class ServiceProcess {
     @Async
     public void watchAndTransform
         (Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
+
         try {
+            // ==============================================
+            // Guard: 監視ディレクトリの存在チェック
+            // - 存在しない、またはディレクトリでない場合はreturn
+            // ==============================================
+            validateDirectory(endFileDir, "監視ディレクトリ");
             // 監視開始
             statusHolder.setStatus(WXStatus.WATCHING);
             Path detectedEndFilePath = watcher.watcher(endFileDir);
+
+            // ==============================================
+            // Guard: resultディレクトリ, tempディレクトリの存在チェック
+            // - 存在しない、またはディレクトリでない場合はreturn
+            // ==============================================
+            validateDirectory(resultFileDir, "Resultディレクトリ");
+            validateDirectory(tempFileDir, "一時ディレクトリ");
 
             // 変換処理開始
             statusHolder.setStatus(WXStatus.PROCESSING);
@@ -45,18 +61,13 @@ public class ServiceProcess {
             //完了
             statusHolder.setStatus(WXStatus.COMPLETED);
 
-        } catch (WXException wxEx) {
-            statusHolder.setStatus(WXStatus.ERROR);
-            statusHolder.setErrorMessage(wxEx.getMessage());
-            System.err.println("業務エラー：" + wxEx.getMessage());
+        } catch (ValidationException validationEx) {
+            statusHolder.setStatus(WXStatus.VALIDATION_ERROR);
+            statusHolder.setErrorMessage(validationEx.getMessage());
 
-        } catch (Exception e) {
-            statusHolder.setStatus(WXStatus.ERROR);
-            statusHolder.setErrorMessage("予期しないエラー");
-
-            System.err.println("想定外エラー");
-            e.printStackTrace();
-
+        } catch (SystemException systemEx) {
+            statusHolder.setStatus(WXStatus.SYSTEM_ERROR);
+            statusHolder.setErrorMessage(systemEx.getMessage());
         }
     }
 
@@ -67,7 +78,7 @@ public class ServiceProcess {
     ////////////////////////////////////////////////////////////////////////////////////
     public void transform
         (Path endFilePath, Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) 
-        throws Exception {
+        throws SystemException {
 
         //endFilePathからendFileNameを取り出す
         String endfileName = endFilePath.getFileName().toString();
@@ -108,6 +119,16 @@ public class ServiceProcess {
         XP.xendPaste(xendGenerateTarget, xendPasteTarget);
     }
 
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    //ディレクトリが存在するか確認するメソッド
+    //throw:ValidationException
+    ////////////////////////////////////////////////////////////////////////////////////
+    private void validateDirectory(Path path, String pathName) {
+        if (!Files.isDirectory(path)) {
+            throw new ValidationException(pathName + "が見つかりませんでした：" + path);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////
     //以下パス解決のための補助メソッド群

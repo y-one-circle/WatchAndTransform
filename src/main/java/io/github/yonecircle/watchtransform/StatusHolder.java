@@ -7,11 +7,10 @@ import org.springframework.stereotype.Component;
 ////////////////////////////////////////////////////////////////////////////////////
 @Component
 public class StatusHolder {
-    //ステータス
-    private WXStatus currentStatus = WXStatus.WAITING;
-    //エラーメッセージ
-    private String errorMessage = null;
-
+    
+    private WXStatus currentStatus = WXStatus.WAITING;  //ステータス
+    private String errorMessage = null;                 //エラーメッセージ
+    private Throwable cause = null;                     //エラー原因詳細
 
     //ステータスgetter, setter
     public WXStatus getStatus(){
@@ -21,12 +20,19 @@ public class StatusHolder {
         this.currentStatus = currentStatus;
     }
 
-    
     //エラーメッセージgetter, setter
     public String getErrorMessage() {
         return this.errorMessage;
     }
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    //エラー原因詳細getter, setter
+    public Throwable getCause() {
+        return this.cause;
+    }
+    public void setCause(Throwable cause) {
+        this.cause = cause;
     }
 }

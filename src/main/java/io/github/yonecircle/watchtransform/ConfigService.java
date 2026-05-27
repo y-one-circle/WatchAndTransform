@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import org.springframework.stereotype.Service;
 
 import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
-import io.github.yonecircle.watchtransform.exception.WXException;
+import io.github.yonecircle.watchtransform.exception.SystemException;
 
 @Service
 public class ConfigService {
@@ -23,7 +23,7 @@ public class ConfigService {
     //return:Properties
     //Note:PropertyオブジェクトにInputStreamでキーバリュー情報を流し込む
     ////////////////////////////////////////////////////////////////////////////////////
-    public Properties loadProperties(){
+    public Properties loadProperties() throws SystemException {
         Properties props = new Properties();
         if (Files.exists(CONFIG_PATH)) {
             //try-with-resources構文
@@ -32,7 +32,7 @@ public class ConfigService {
             try (InputStream input = Files.newInputStream(CONFIG_PATH)) {
                 props.load(input);
             } catch (IOException ioEx) {
-                throw new WXException("プロパティファイルの読み込みに失敗しました", ioEx);
+                throw new SystemException("プロパティファイルの読み込みに失敗しました", ioEx);
             }
         }
         return props;
@@ -42,7 +42,7 @@ public class ConfigService {
     //return:無し
     //Note:PropertyオブジェクトにInputStreamでキーバリュー情報を流し込む
     ////////////////////////////////////////////////////////////////////////////////////
-    public void saveProperties(WXExecuteRequest req) {
+    public void saveProperties(WXExecuteRequest req) throws SystemException {
         Properties props = new Properties();
 
         props.setProperty("endfileFolderPath", normalizeForProperties(req.getEndfileFolderPath()));
@@ -53,7 +53,7 @@ public class ConfigService {
         try (OutputStream output = Files.newOutputStream(CONFIG_PATH)) {
             props.store(output, "wx config");
         } catch (IOException ioEx) {
-            throw new WXException("プロパティファイルの保存に失敗しました", ioEx);
+            throw new SystemException("プロパティファイルの保存に失敗しました", ioEx);
         }
     } 
 

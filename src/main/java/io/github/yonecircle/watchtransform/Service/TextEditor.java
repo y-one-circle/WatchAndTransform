@@ -6,7 +6,7 @@ import java.util.List;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import io.github.yonecircle.watchtransform.exception.WXException;
+import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import java.util.regex.Matcher;
 
@@ -16,7 +16,7 @@ public class TextEditor {
     //return:無し
     //Note:suffixを外部入力化
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void edit(Path textfilePath){
+    public void edit(Path textfilePath) throws SystemException {
 
         //ハードコーディング
         String KEYWORD_NAME = "Name";
@@ -89,7 +89,7 @@ public class TextEditor {
             Files.write(textfilePath, subList, StandardCharsets.UTF_8);
 
         }catch(IOException ioEx){
-            throw new WXException("テキストファイルの読み込みに失敗しました" ,ioEx);
+            throw new SystemException("テキストファイルの読み込みに失敗しました" ,ioEx);
         }
         //ここにコメントブロック
     }

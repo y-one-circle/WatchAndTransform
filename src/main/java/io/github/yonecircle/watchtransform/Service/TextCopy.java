@@ -2,7 +2,7 @@ package io.github.yonecircle.watchtransform.Service;
 
 import java.nio.file.Path;
 
-import io.github.yonecircle.watchtransform.exception.WXException;
+import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,14 +13,14 @@ public class TextCopy {
     //return:無し
     //Note:入出力エラー発生時にはServiceProcessクラスにエラーメッセージとThrowableを投げる
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void copy(Path copysourcePath, Path copytargetPath)throws Exception{
+    public void copy(Path copysourcePath, Path copytargetPath)throws SystemException{
         //例外処理テスト用
         //throw new WXException("コピーに失敗しました", null);/*
 
         try{
             Files.copy(copysourcePath, copytargetPath);
         } catch(IOException ioEx){
-            throw new WXException("テキストファイルのコピーに失敗しました", ioEx);
+            throw new SystemException("テキストファイルのコピーに失敗しました", ioEx);
         }
         
     }
