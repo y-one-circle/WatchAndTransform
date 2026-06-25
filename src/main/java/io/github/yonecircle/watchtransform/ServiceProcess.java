@@ -86,12 +86,12 @@ public class ServiceProcess {
         //TextCopy
         Path copySource= this.resolveTxtPathFromEndFile(endfileName, resultFileDir);
         Path copyTarget = this.resolveCopytargetPath(endfileName, tempFileDir);
-        TextCopy TC = new TextCopy();
-        TC.copy(copySource, copyTarget);
+        TextCopy textCopy = new TextCopy();
+        textCopy.copy(copySource, copyTarget);
 
         //TextEdit
-        TextEditor TE = new  TextEditor();
-        TE.edit(copyTarget);
+        TextEditor textEditor = new TextEditor();
+        textEditor.edit(copyTarget);
 
         /*
         TextRenamePaste
@@ -105,18 +105,18 @@ public class ServiceProcess {
         } else {
             text_renametarget_Object = this.resolveRenameTargetPathSuffixMode1(resultFileDir, this.removeExtension(endfileName));
         }
-        TextMove TP = new TextMove();
-        TP.textMove(copyTarget, text_renametarget_Object, suffixMode);
+        TextMove textMove = new TextMove();
+        textMove.textMove(copyTarget, text_renametarget_Object, suffixMode);
 
         //XENDファイルの生成
         Path xendGenerateTarget = this.resolveGenerateTargetXendPath(tempFileDir, this.removeExtension(endfileName));
-        XENDGenerator XG = new XENDGenerator();
-        XG.xendGenerator(xendGenerateTarget, returnCode);
+        XENDGenerator xEndGenerator = new XENDGenerator();
+        xEndGenerator.xendGenerator(xendGenerateTarget, returnCode);
 
         //XENDファイルのペースト
         Path xendPasteTarget = this.resolvePasteTargetXendPath(endFileDir, this.removeExtension(endfileName));
-        XENDPaste XP = new XENDPaste();
-        XP.xendPaste(xendGenerateTarget, xendPasteTarget);
+        XENDPaste xEndPaste = new XENDPaste();
+        xEndPaste.xendPaste(xendGenerateTarget, xendPasteTarget);
     }
 
 

@@ -17,10 +17,10 @@ public class XENDGenerator {
         //throw new WXException("XENDファイルの生成に失敗しました", null);/* 
 
     try{
-    //空のXENDファイル作成
-    Files.createFile(generateTargetPath);
-    //ReturnCodeを書き込み
-    Files.writeString(generateTargetPath, ReturnCode, StandardCharsets.UTF_8);
+        //空のXENDファイル作成
+        Files.createFile(generateTargetPath);
+        //ReturnCodeを書き込み
+        Files.writeString(generateTargetPath, ReturnCode, StandardCharsets.UTF_8);
     }catch(IOException ioEx){
         throw new SystemException("XENDファイルの生成に失敗しました", ioEx);
         }
