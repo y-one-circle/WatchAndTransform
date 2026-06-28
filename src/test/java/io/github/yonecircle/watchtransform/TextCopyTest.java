@@ -70,7 +70,8 @@ public class TextCopyTest {
     public void should_throwSystemException_when_sourceFileIsMissing() {
         //存在しないsourceFileパスを作成
         Path nonExistFile = tempDir.resolve("nonExist.txt");
-        assertThrows(SystemException.class, ()-> {textCopy.copy(nonExistFile, destFile);});
+        assertThrows(SystemException.class, ()-> {textCopy.copy(nonExistFile, destFile);}, 
+                    "ソースファイルが存在しない時にSystemExeptionを投げらていません");
     }
     //追加テスト
     //コピー先ディレクトリが存在しない
