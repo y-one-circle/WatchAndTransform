@@ -9,7 +9,7 @@ import io.github.yonecircle.watchtransform.service.TextCopy;
 import io.github.yonecircle.watchtransform.service.TextEditor;
 import io.github.yonecircle.watchtransform.service.TextMove;
 import io.github.yonecircle.watchtransform.service.XENDGenerator;
-import io.github.yonecircle.watchtransform.service.XENDPaste;
+import io.github.yonecircle.watchtransform.service.XENDMove;
 import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import org.springframework.scheduling.annotation.Async;
@@ -106,17 +106,17 @@ public class ServiceProcess {
             text_renametarget_Object = this.resolveRenameTargetPathSuffixMode1(resultFileDir, this.removeExtension(endfileName));
         }
         TextMove textMove = new TextMove();
-        textMove.textMove(copyTarget, text_renametarget_Object, suffixMode);
+        textMove.textMove(copyTarget, text_renametarget_Object);
 
         //XENDファイルの生成
         Path xendGenerateTarget = this.resolveGenerateTargetXendPath(tempFileDir, this.removeExtension(endfileName));
         XENDGenerator xEndGenerator = new XENDGenerator();
         xEndGenerator.xendGenerator(xendGenerateTarget, returnCode);
 
-        //XENDファイルのペースト
+        //XENDファイルの移動
         Path xendPasteTarget = this.resolvePasteTargetXendPath(endFileDir, this.removeExtension(endfileName));
-        XENDPaste xEndPaste = new XENDPaste();
-        xEndPaste.xendPaste(xendGenerateTarget, xendPasteTarget);
+        XENDMove xEndPaste = new XENDMove();
+        xEndPaste.xendMove(xendGenerateTarget, xendPasteTarget);
     }
 
 

@@ -1,4 +1,4 @@
-package io.github.yonecircle.watchtransform;
+package io.github.yonecircle.watchtransform.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import io.github.yonecircle.watchtransform.exception.SystemException;
-import io.github.yonecircle.watchtransform.service.TextCopy;
 
 public class TextCopyTest {
 
@@ -71,7 +70,7 @@ public class TextCopyTest {
         //存在しないsourceFileパスを作成
         Path nonExistFile = tempDir.resolve("nonExist.txt");
         assertThrows(SystemException.class, ()-> {textCopy.copy(nonExistFile, destFile);}, 
-                    "ソースファイルが存在しない時にSystemExeptionを投げらていません");
+                    "ソースファイルが存在しない時にSystemExeptionを投げれていません");
     }
     //追加テスト
     //コピー先ディレクトリが存在しない

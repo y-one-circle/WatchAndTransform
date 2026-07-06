@@ -11,7 +11,7 @@ public class TextMove {
     //Psthオブジェクトを受け取ってファイルを移動させる
     //return:無し
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void textMove(Path sourcePath, Path targetPath, String suffixMode) throws SystemException {
+    public void textMove(Path sourcePath, Path targetPath) throws SystemException {
     //例外処理テスト用
         //throw new WXException("編集したファイルの移動に失敗しました", null);/*
 

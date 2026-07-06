@@ -6,12 +6,12 @@ import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import java.io.IOException;
 
-public class XENDPaste {
+public class XENDMove {
     ///////////////////////////////////////////////////////////////////////////////////////
     //XENDGeneratorで生成されたXENDファイルを指定のパスに移動する
     //return:無し
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void xendPaste(Path sourcePath, Path targetPath) throws SystemException {
+    public void xendMove(Path sourcePath, Path targetPath) throws SystemException {
     //例外処理テスト用
         //throw new WXException("XENDファイルの移動に失敗しました", null);/*
     try{
