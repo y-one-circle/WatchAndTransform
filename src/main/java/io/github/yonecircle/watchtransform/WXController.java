@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import io.github.yonecircle.watchtransform.dto.StatusResponse;
+import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
+import io.github.yonecircle.watchtransform.exception.SystemException;
+import io.github.yonecircle.watchtransform.exception.ValidationException;
+
 @Controller
 public class WXController {
 
@@ -57,6 +62,19 @@ public class WXController {
     @ResponseBody
     public ResponseEntity<Void> execute(@RequestBody WXExecuteRequest dto) {
 
+        if (dto.getEndfileFolderPath() == null || dto.getEndfileFolderPath().isEmpty()) {
+            throw new ValidationException("監視フォルダのパスは入力されていません");
+        }
+        if (dto.getTxtFolderPath() == null || dto.getTxtFolderPath().isEmpty()) {
+            throw new ValidationException("テキストフォルダのパスは入力されていません");
+        }
+        if (dto.getTempFolderPath() == null || dto.getTempFolderPath().isEmpty()) {
+            throw new ValidationException("一時フォルダのパスは入力されていません");
+        }
+        if (dto.getReturnCode() == null || dto.getReturnCode().isEmpty()) {
+            throw new ValidationException("リターンコードが入力されていません");
+        }
+
         //確認用
         System.out.println("=== execute() called ===");
         System.out.println("endfileFolderPath = " + dto.getEndfileFolderPath());
@@ -65,15 +83,14 @@ public class WXController {
         System.out.println("returnCode        = " + dto.getReturnCode());
         System.out.println("suffixMode        = " + dto.getSuffixMode());
 
-        try {
             //ユーザ入力String→ロジック用正規化Path
-            PathNormalizer normalizer = new PathNormalizer();
+            //PathNormalizer normalizer = new PathNormalizer();
             Path endFileDir    = Paths.get(dto.getEndfileFolderPath());
             Path resultFileDir = Paths.get(dto.getTxtFolderPath());
             Path tempFileDir   = Paths.get(dto.getTempFolderPath());
 
-            //watchAndExecuteを呼ぶだけで即returnする（@Asyncで別スレッド実行）
-            serviceProcess.watchAndExecute(
+            //watchAndTransformを呼ぶだけで即returnする（@Asyncで別スレッド実行）
+            serviceProcess.watchAndTransform(
                 endFileDir,
                 resultFileDir,
                 tempFileDir,
@@ -81,20 +98,20 @@ public class WXController {
                 dto.getSuffixMode());
 
             return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    //JSのポーリングに対して現在のステータスを返す
+    //JavaScriptのポーリングに対して現在のステータスを返す
     //return:String（WXStatusのenum名）
     ////////////////////////////////////////////////////////////////////////////////////
     @GetMapping("/api/wx/status")
     @ResponseBody
-    public String getStatus() {
-        return statusHolder.getStatus().name();
+    public StatusResponse getStatus() {
+        StatusResponse res = new StatusResponse();
+        res.setStatus(statusHolder.getStatus());
+        res.setMessage(statusHolder.getErrorMessage());
+
+        return res;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -104,7 +121,7 @@ public class WXController {
     ////////////////////////////////////////////////////////////////////////////////////
     @GetMapping("/api/wx/config")
     @ResponseBody
-    public WXExecuteRequest loadConfig() {
+    public WXExecuteRequest loadConfig() throws SystemException {
         Properties props = configService.loadProperties();
 
         WXExecuteRequest dto = new WXExecuteRequest();
@@ -123,7 +140,7 @@ public class WXController {
     ////////////////////////////////////////////////////////////////////////////////////
     @PostMapping("/api/wx/config")
     @ResponseBody
-    public void saveConfig(@RequestBody WXExecuteRequest dto) {
+    public void saveConfig(@RequestBody WXExecuteRequest dto) throws SystemException {
         configService.saveProperties(dto);
     }
 }

@@ -1,24 +1,24 @@
 package io.github.yonecircle.watchtransform.service;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import io.github.yonecircle.watchtransform.exception.SystemException;
 
-import java.nio.file.Files;
 import java.io.IOException;
 
-public class TextMove {
+public class XENDMove {
     ///////////////////////////////////////////////////////////////////////////////////////
-    //Psthオブジェクトを受け取ってファイルを移動させる
+    //XENDGeneratorで生成されたXENDファイルを指定のパスに移動する
     //return:無し
     ///////////////////////////////////////////////////////////////////////////////////////
-    public void textMove(Path sourcePath, Path targetPath) throws SystemException {
+    public void xendMove(Path sourcePath, Path targetPath) throws SystemException {
     //例外処理テスト用
-        //throw new WXException("編集したファイルの移動に失敗しました", null);/*
-
+        //throw new WXException("XENDファイルの移動に失敗しました", null);/*
     try{
         Files.move(sourcePath, targetPath);
     }catch(IOException ioEx){
-            throw new SystemException("編集したファイルの移動に失敗しました", ioEx);
+        throw new SystemException("XENDファイルの移動に失敗しました", ioEx);
         }
-    }
+        
+    }   
 }

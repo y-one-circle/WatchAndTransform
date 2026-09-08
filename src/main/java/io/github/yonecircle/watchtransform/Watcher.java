@@ -12,12 +12,14 @@ import java.nio.file.WatchEvent;
 
 import org.springframework.stereotype.Component;
 
+import io.github.yonecircle.watchtransform.exception.SystemException;
+
 import java.nio.file.FileSystems;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 //import static java.nio.file.WatchEvent.*;
 
-//ほぼ参照https://qiita.com/opengl-8080/items/91a8ac36ab3d8600a529
+//ほぼ参照  https://qiita.com/opengl-8080/items/91a8ac36ab3d8600a529
 @Component
 public class Watcher {
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -25,13 +27,17 @@ public class Watcher {
     //return:Path
     //Note:例外処理未実装
     ///////////////////////////////////////////////////////////////////////////////////////
-    public Path watcher(Path watchTargetPath) throws IOException, InterruptedException {
+    public Path watcher(Path watchTargetPath) throws SystemException {
     System.out.println("[Watcher] start watching: " + watchTargetPath);//デバッグ
+
+    try {
+        //↓ファイル監視のためのOSのリソース確保に失敗する可能性あり
         WatchService watcher = FileSystems.getDefault().newWatchService();
             watchTargetPath.register(watcher, ENTRY_CREATE); //作成に対して監視
         while (true) {
         System.out.println("[Watcher] waiting for event...");//デバッグ
-        WatchKey key = watcher.take(); //イベントが起きるまで待機
+        //↓イベントが来るまで無限待機なのでスレッドを止められるとInterruptedException発生可能性あり
+        WatchKey key = watcher.take(); 
 
         for (WatchEvent<?> event : key.pollEvents()) {
             WatchEvent.Kind<?> kind = event.kind();
@@ -49,6 +55,9 @@ public class Watcher {
             }
         }
         key.reset();
+    }
+    } catch (IOException | InterruptedException e) {
+        throw new SystemException("endファイル監視に失敗しました", e);
     }
 }
 }

@@ -18,18 +18,28 @@
       "WATCHING":   "監視中",
       "PROCESSING": "変換処理実行中",
       "COMPLETED":  "WX完了",
-      "ERROR":      "エラーが発生しました"
+      "ERROR":      "エラー発生"
     };
 
     // ★新規追加：2秒ごとにポーリング
     const intervalId = setInterval(async () => {
       try {
         const res = await fetch("/api/wx/status");
-        const status = await res.text();
+        //JSONとして受け取る
+        const data = await res.json();
+        const status = data.status;
+        const message = data.message;
+
+        //ステータス表示
+        let displayText = statusMessages[status] || status;
+
+        //エラー時だけ詳細表示
+        if (status === "ERROR" && message) {
+          displayText += "：" + message;
+        }
 
         // 取得したステータスに対応する日本語を表示
-        document.getElementById("statusMessage").textContent =
-          statusMessages[status] || status;
+        document.getElementById("statusMessage").textContent = displayText;
 
         // 終了状態になったらポーリングを止める
         if (status === "COMPLETED" || status === "ERROR") {
@@ -40,7 +50,7 @@
         document.getElementById("statusMessage").textContent = "状態の取得に失敗しました";
         clearInterval(intervalId);
       }
-    }, 2000);
+    }, 1000);
   </script>
 
 </body>
