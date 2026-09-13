@@ -1,0 +1,10 @@
+HogeHoge
+Hello, Wprld!!
+Name    PODID_Hoge_Suffix
+DataNumber 4;
+Apple, Orange, Grape
+DataList 4
+1 alpha 7342 false 0.91
+2 bravo 1208 true 3.47
+3 charlie 5561 false 8.02
+4 delta 9874 true 1.55;

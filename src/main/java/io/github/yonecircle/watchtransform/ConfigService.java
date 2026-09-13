@@ -27,8 +27,6 @@ public class ConfigService {
         Properties props = new Properties();
         if (Files.exists(CONFIG_PATH)) {
             //try-with-resources構文
-            //try の中で使うリソース（今回は InputStream）を宣言すると、 
-            //tryブロックを抜けると自動的にin.close()を呼ぶ
             try (InputStream input = Files.newInputStream(CONFIG_PATH)) {
                 props.load(input);
             } catch (IOException ioEx) {

@@ -8,11 +8,11 @@
 <body>
 
   <h1>Watch&Transform</h1>
-  <!-- ★変更：idを付けてJSから書き換えられるようにする -->
+  <!-- idを付けてJSから書き換えられるようにする -->
   <p id="statusMessage">状態を取得中...</p>
 
   <script>
-    // ★新規追加：ステータスとメッセージのマッピング
+    // ステータスとメッセージのマッピング
     const statusMessages = {
       "WAITING":    "待機中",
       "WATCHING":   "監視中",
@@ -21,7 +21,7 @@
       "ERROR":      "エラー発生"
     };
 
-    // ★新規追加：2秒ごとにポーリング
+    // 3秒ごとにポーリング
     const intervalId = setInterval(async () => {
       try {
         const res = await fetch("/api/wx/status");
@@ -50,7 +50,7 @@
         document.getElementById("statusMessage").textContent = "状態の取得に失敗しました";
         clearInterval(intervalId);
       }
-    }, 1000);
+    }, 3000);
   </script>
 
 </body>

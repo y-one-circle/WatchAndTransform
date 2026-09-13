@@ -64,7 +64,6 @@ window.onload = async function () {
     if (!res.ok) {
       const err =await res.json();
       throw new Error(err.message);
-      return;
     }
  
     const config = await res.json();
