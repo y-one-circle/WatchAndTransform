@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import io.github.yonecircle.watchtransform.exception.SystemException;
+import io.github.yonecircle.watchtransform.exception.ValidationException;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServiceProcessTest {
@@ -50,7 +52,7 @@ public class ServiceProcessTest {
     //以下パス解決のための補助メソッド群のテスト系
     ////////////////////////////////////////////////////////////////////////////////////
     @Test
-    @DisplayName("拡張子を除いた文字列を返すか")
+    @DisplayName("正常系：拡張子を除いた文字列を返すか")
     public void should_removeExtension () {
         String expectedString = "Hoge";
         assertEquals(serviceProcess.removeExtension(endfileNameSuffix0), expectedString,
@@ -58,7 +60,7 @@ public class ServiceProcessTest {
     }
 
     @Test
-    @DisplayName("endファイル名からコピーすべきtxtファイルのPathを返すか")
+    @DisplayName("正常系：endファイル名からコピーすべきtxtファイルのPathを返すか")
     public void should_resolveTxtPathFromEndFile () {
         Path expected = Paths.get(textFileDir.toString() + "/Hoge.txt");
         Path actual = serviceProcess.resolveTxtPathFromEndFile(endfileNameSuffix0,textFileDir);
@@ -66,35 +68,35 @@ public class ServiceProcessTest {
     }
 
     @Test
-    @DisplayName("endファイルからtxtファイルのコピー先のPathを返すか")
+    @DisplayName("正常系：endファイルからtxtファイルのコピー先のPathを返すか")
     public void should_resolveCopytargetPath () {
         Path expected = Paths.get(tempFileDir.toString() + "/Hoge.txt");
         Path actual = serviceProcess.resolveCopytargetPath(endfileNameSuffix0,tempFileDir);
         assertEquals(expected, actual, "コピー先txtファイルのPathが期待値と異なります");
     }
     @Test
-    @DisplayName("RenameしてPasteするファイルのPathを返すか SuffixMode=0")
+    @DisplayName("正常系：RenameしてPasteするファイルのPathを返すか SuffixMode=0")
     public void should_resolveRenameTargetPathSuffixMode0 () {
         Path expected = Paths.get(textFileDir.toString() + "/Hoge_Suffix.txt");
         Path actual = serviceProcess.resolveRenameTargetPathSuffixMode0(textFileDir,endfileNameSuffix0);
         assertEquals(expected, actual, "RenameしてPasteするファイルのPathが期待値と異なります SuffixMode=0");
     }
     @Test
-    @DisplayName("RenameしてPasteするファイルのPathを返すか SuffixMode=1")
+    @DisplayName("正常系：RenameしてPasteするファイルのPathを返すか SuffixMode=1")
     public void should_resolveRenameTargetPathSuffixMode1 () {
         Path expected = Paths.get(textFileDir.toString() + "/Hoge.txt");
         Path actual = serviceProcess.resolveRenameTargetPathSuffixMode1(textFileDir,"Hoge_Suffix.end");
         assertEquals(expected, actual, "RenameしてPasteするファイルが期待値と異なります SuffixMode=1");
     }
     @Test
-    @DisplayName("FFENDファイルの生成先Pathを返すか")
+    @DisplayName("正常系：FFENDファイルの生成先Pathを返すか")
     public void should_resolveGenerateTargetXendPath () {
         Path expected = Paths.get(tempFileDir.toString() + "/Hoge.XEND");
         Path actual = serviceProcess.resolveGenerateTargetXendPath(tempFileDir,endfileNameSuffix0);
         assertEquals(expected, actual, "FFENDファイルの生成先Pathが期待値と異なります");
     }
     @Test
-    @DisplayName("FFENDファイルのペースト先Pathを返すか")
+    @DisplayName("正常系：FFENDファイルのペースト先Pathを返すか")
     public void should_resolvePasteTargetXendPath () {
         Path expected = Paths.get(endFileDir.toString() + "/Hoge.XEND");
         Path actual = serviceProcess.resolvePasteTargetXendPath(endFileDir,endfileNameSuffix0);
@@ -107,7 +109,7 @@ public class ServiceProcessTest {
     //最終成果物であるSample_Suffix.txtとSample.XENDの存在確認のみをおこなう
     ////////////////////////////////////////////////////////////////////////////////////
     @Test
-    @DisplayName("Sample_Suffix.txtとSample.XENDが作成されるか")
+    @DisplayName("正常系：Sample_Suffix.txtとSample.XENDが作成されるか")
     public void should_createTransformedTextAndXENDFile_when_Suffix0 () throws SystemException, IOException {
         //Path作成
         Path endFilePath = endFileDir.resolve(endfileNameSuffix0);
@@ -136,13 +138,13 @@ public class ServiceProcessTest {
         );
     }
 
-        ////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
     //transform()SuffixMode=1のテスト
     //transform()は各ServiceインスタンスにPathを渡しているだけのクラスなので
     //最終成果物であるSample.txtとSample_Suffix.XENDの存在確認のみをおこなう
     ////////////////////////////////////////////////////////////////////////////////////
     @Test
-    @DisplayName("Sample.txtとSample_Suffix.XENDが作成されるか")
+    @DisplayName("正常系：Sample.txtとSample_Suffix.XENDが作成されるか")
     public void should_createTransformedTextAndXENDFile_when_Suffix1 () throws SystemException, IOException {
         //Path作成
         Path endFilePath = endFileDir.resolve(endfileNameSuffix1);
@@ -171,6 +173,20 @@ public class ServiceProcessTest {
         );
     }
 
+    //transform()のGuardテスト
+    @Test 
+    @DisplayName ("異常系：SuffixMode=1かつtxtファイルに\"_\"がつかない場合にValidationExceptionを投げるか")
+    public void should_throwValidationException_when_suffixmode1_and_suffixNotExist() throws SystemException,IOException {
+        //Pathとファイル作成 
+        Path endFilePath = endFileDir.resolve(endfileNameSuffix0);
+        Path textFilePath = textFileDir.resolve("Hoge.txt");
+        Files.writeString(textFilePath, "");
+ 
+        //検証
+        assertThrows(ValidationException.class, ()-> {
+            serviceProcess.transform(endFilePath, endFileDir, textFileDir, tempFileDir, "1", "1");}, 
+                    "SuffixMode=1かつtxtファイルに\\\"_\\\"がつかない場合にValidationExceptionが投げれていません");
+    }
     /*
     テストメソッドの命名規則「should_結果_when_条件」
     */

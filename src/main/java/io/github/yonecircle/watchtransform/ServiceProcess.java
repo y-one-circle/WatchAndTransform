@@ -39,7 +39,7 @@ public class ServiceProcess {
         try {
             // ==============================================
             // Guard: 監視ディレクトリの存在チェック
-            // - 存在しない、またはディレクトリでない場合はreturn
+            // 存在しない、またはディレクトリでない場合はreturn
             // ==============================================
             validateDirectory(endFileDir, "監視ディレクトリ");
             // 監視開始
@@ -48,7 +48,7 @@ public class ServiceProcess {
 
             // ==============================================
             // Guard: resultディレクトリ, tempディレクトリの存在チェック
-            // - 存在しない、またはディレクトリでない場合はreturn
+            // 存在しない、またはディレクトリでない場合はreturn
             // ==============================================
             validateDirectory(resultFileDir, "Resultディレクトリ");
             validateDirectory(tempFileDir, "一時ディレクトリ");
@@ -81,6 +81,13 @@ public class ServiceProcess {
 
         //endFilePathからendFileNameを取り出す
         String endfileName = endFilePath.getFileName().toString();
+
+        // ==============================================
+        // Guard: SuffixMode=1はファイル名の"_"を前提にしているため
+        // ==============================================
+        if (!"0".equals(suffixMode) && !removeExtension(endfileName).endsWith("_Suffix")) {
+            throw new ValidationException("SuffixMode=1が選択されていますが、ファイル名に _Suffix が含まれていません：" + endfileName);
+        }
 
         //TextCopy
         Path copySource= this.resolveTxtPathFromEndFile(endfileName, resultFileDir);
