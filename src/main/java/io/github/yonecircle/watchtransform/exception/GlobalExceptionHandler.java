@@ -14,9 +14,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<StatusResponse> handleValidationException(ValidationException validationEx) {
         
         StatusResponse res = new StatusResponse();
-        res.setStatus(WXStatus.SYSTEM_ERROR);
+        res.setStatus(WXStatus.VALIDATION_ERROR);
         res.setMessage(validationEx.getMessage());
-
+        //400 Bad Requestを返す
         return ResponseEntity.badRequest().body(res);
     }
 

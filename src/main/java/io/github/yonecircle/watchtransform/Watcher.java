@@ -12,7 +12,9 @@ import java.nio.file.WatchEvent;
 
 import org.springframework.stereotype.Component;
 
+import io.github.yonecircle.watchtransform.exception.StoppedException;
 import io.github.yonecircle.watchtransform.exception.SystemException;
+import io.github.yonecircle.watchtransform.exception.ValidationException;
 
 import java.nio.file.FileSystems;
 
@@ -56,8 +58,10 @@ public class Watcher {
         }
         key.reset();
     }
-    } catch (IOException | InterruptedException e) {
+    } catch (IOException e) {
         throw new SystemException("endファイル監視に失敗しました", e);
+    } catch (InterruptedException e) {
+        throw new StoppedException("endファイル監視を停止しました");
     }
 }
 }

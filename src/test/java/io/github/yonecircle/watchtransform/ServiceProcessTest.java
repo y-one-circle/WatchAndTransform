@@ -49,6 +49,15 @@ public class ServiceProcessTest {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
+    //watchAndTransformのテスト系
+    ////////////////////////////////////////////////////////////////////////////////////
+    @Test
+    @DisplayName("異常系：endFileDirにアクセスできない時")
+    public void should_(){
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////
     //以下パス解決のための補助メソッド群のテスト系
     ////////////////////////////////////////////////////////////////////////////////////
     @Test
@@ -121,13 +130,13 @@ public class ServiceProcessTest {
             Name Samaple.txt;
             DataNumber 7;
             DataList 7;
-        	    1 alpha 0.4500
-	            2 beta 0.0500
-	            3 gamma 0.2500
-	            4 delta 0.4000
-	            5 epsilon 0.5250
-	            6 zeta 0.1000
-	            7 eta 0.5750;""";
+                1 alpha 0.4500
+                2 beta 0.0500
+                3 gamma 0.2500
+                4 delta 0.4000
+                5 epsilon 0.5250
+                6 zeta 0.1000
+                7 eta 0.5750;""";
         Files.writeString(textFilePath, sampleString);
         //実行
         serviceProcess.transform(endFilePath, endFileDir, textFileDir, tempFileDir, "0", "0");
@@ -156,13 +165,13 @@ public class ServiceProcessTest {
             Name Samaple.txt;
             DataNumber 7;
             DataList 7;
-        	    1 alpha 0.4500
-	            2 beta 0.0500
-	            3 gamma 0.2500
-	            4 delta 0.4000
-	            5 epsilon 0.5250
-	            6 zeta 0.1000
-	            7 eta 0.5750;""";
+                1 alpha 0.4500
+                2 beta 0.0500
+                3 gamma 0.2500
+                4 delta 0.4000
+                5 epsilon 0.5250
+                6 zeta 0.1000
+                7 eta 0.5750;""";
         Files.writeString(textFilePath, sampleString);
         //実行
         serviceProcess.transform(endFilePath, endFileDir, textFileDir, tempFileDir, "1", "1");
@@ -181,7 +190,6 @@ public class ServiceProcessTest {
         Path endFilePath = endFileDir.resolve(endfileNameSuffix0);
         Path textFilePath = textFileDir.resolve("Hoge.txt");
         Files.writeString(textFilePath, "");
- 
         //検証
         assertThrows(ValidationException.class, ()-> {
             serviceProcess.transform(endFilePath, endFileDir, textFileDir, tempFileDir, "1", "1");}, 

@@ -3,14 +3,15 @@ package io.github.yonecircle.watchtransform;
 import org.springframework.stereotype.Component;
 
 ////////////////////////////////////////////////////////////////////////////////////
-//内部のステータスとエラー内容を一元管理
+//非同期処理内のステータスとエラー内容を一元管理
 ////////////////////////////////////////////////////////////////////////////////////
 @Component
 public class StatusHolder {
     
     private WXStatus currentStatus = WXStatus.WAITING;  //ステータス
-    private String errorMessage = null;                 //エラーメッセージ
+    private String message = null;                 //メッセージ
     private Throwable cause = null;                     //エラー原因詳細
+    private Thread currentThread = null;                 //スレッド
 
     //ステータスgetter, setter
     public WXStatus getStatus(){
@@ -21,11 +22,11 @@ public class StatusHolder {
     }
 
     //エラーメッセージgetter, setter
-    public String getErrorMessage() {
-        return this.errorMessage;
+    public String getMessage() {
+        return this.message;
     }
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setMessage(String errorMessage) {
+        this.message = errorMessage;
     }
 
     //エラー原因詳細getter, setter
@@ -34,5 +35,13 @@ public class StatusHolder {
     }
     public void setCause(Throwable cause) {
         this.cause = cause;
+    }
+
+        //スレッドgetter, setter
+    public Thread getThread() {
+        return this.currentThread;
+    }
+    public void setThread(Thread thread) {
+        this.currentThread = thread;
     }
 }

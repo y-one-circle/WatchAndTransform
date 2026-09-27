@@ -11,6 +11,8 @@
   <!-- idを付けてJSから書き換えられるようにする -->
   <p id="statusMessage">状態を取得中...</p>
 
+  <button onclick="stopWatching()">監視停止</button>
+
   <script>
     // ステータスとメッセージのマッピング
     const statusMessages = {
@@ -18,7 +20,9 @@
       "WATCHING":   "監視中",
       "PROCESSING": "変換処理実行中",
       "COMPLETED":  "WX完了",
-      "ERROR":      "エラー発生"
+      "VALIDATION_ERROR":      "バリデーションエラー発生",
+      "SYSTEM_ERROR":  "システムエラー発生",
+      "STOPPED":  "ユーザーストップ"
     };
 
     // 3秒ごとにポーリング
@@ -33,16 +37,18 @@
         //ステータス表示
         let displayText = statusMessages[status] || status;
 
-        //エラー時だけ詳細表示
-        if (status === "ERROR" && message) {
+        //監視中とエラー時とユーザストップ時に詳細表示
+        if (status === "WATCHING" || status === "VALIDATION_ERROR" || status === "SYSTEM_ERROR" || status === "STOPPED") {
+          if (message){
           displayText += "：" + message;
+          }
         }
 
         // 取得したステータスに対応する日本語を表示
         document.getElementById("statusMessage").textContent = displayText;
 
         // 終了状態になったらポーリングを止める
-        if (status === "COMPLETED" || status === "ERROR") {
+        if (status === "COMPLETED" || status === "VALIDATION_ERROR" ||  status ==="SYSTEM_ERROR" || status === "STOPPED") {
           clearInterval(intervalId);
         }
 
@@ -51,6 +57,16 @@
         clearInterval(intervalId);
       }
     }, 3000);
+
+    async function stopWatching() {
+      const res = await fetch("/api/wx/stopwatching",{
+      method: "POST",
+      });
+      if (!res.ok) {
+      const data = await res.json();
+      document.getElementById("statusMessage").textContent = data.message;
+    }
+  }
   </script>
 
 </body>

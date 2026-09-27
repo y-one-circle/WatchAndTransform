@@ -6,5 +6,6 @@ public enum WXStatus {
     PROCESSING,         //ファイル編集実行中
     COMPLETED,          //ファイル編集完了
     VALIDATION_ERROR,   //ユーザが対処できるエラー
-    SYSTEM_ERROR;       //ユーザが対処できないエラー
+    SYSTEM_ERROR,       //ユーザが対処できないエラー
+    STOPPED;            //ユーザが停止したこと
 }

@@ -9,6 +9,7 @@ import io.github.yonecircle.watchtransform.service.TextEditor;
 import io.github.yonecircle.watchtransform.service.TextMove;
 import io.github.yonecircle.watchtransform.service.XENDGenerator;
 import io.github.yonecircle.watchtransform.service.XENDMove;
+import io.github.yonecircle.watchtransform.exception.StoppedException;
 import io.github.yonecircle.watchtransform.exception.SystemException;
 
 import org.springframework.scheduling.annotation.Async;
@@ -37,21 +38,24 @@ public class ServiceProcess {
         (Path endFileDir, Path resultFileDir, Path tempFileDir, String returnCode, String suffixMode) {
 
         try {
+            Thread currentthread = Thread.currentThread();
+            statusHolder.setThread(currentthread);
+            
+            //StatusHolderのメッセージと詳細原因のクリア
+            statusHolder.setMessage(null);
+            statusHolder.setCause(null);
+
             // ==============================================
-            // Guard: 監視ディレクトリの存在チェック
+            // Guard: 監視ディレクトリの存在チェック、テキストディレクトリ, 一時ディレクトリの存在チェック
             // 存在しない、またはディレクトリでない場合はreturn
             // ==============================================
             validateDirectory(endFileDir, "監視ディレクトリ");
+            validateDirectory(resultFileDir, "テキストファイルディレクトリ");
+            validateDirectory(tempFileDir, "一時ディレクトリ");
             // 監視開始
             statusHolder.setStatus(WXStatus.WATCHING);
+            statusHolder.setMessage(endFileDir.toString());
             Path detectedEndFilePath = watcher.watcher(endFileDir);
-
-            // ==============================================
-            // Guard: resultディレクトリ, tempディレクトリの存在チェック
-            // 存在しない、またはディレクトリでない場合はreturn
-            // ==============================================
-            validateDirectory(resultFileDir, "Resultディレクトリ");
-            validateDirectory(tempFileDir, "一時ディレクトリ");
 
             // 変換処理開始
             statusHolder.setStatus(WXStatus.PROCESSING);
@@ -62,11 +66,15 @@ public class ServiceProcess {
 
         } catch (ValidationException validationEx) {
             statusHolder.setStatus(WXStatus.VALIDATION_ERROR);
-            statusHolder.setErrorMessage(validationEx.getMessage());
+            statusHolder.setMessage(validationEx.getMessage());
+        
+        } catch (StoppedException stoppedEx) {
+            statusHolder.setStatus(WXStatus.STOPPED);
+            statusHolder.setMessage(stoppedEx.getMessage());
 
         } catch (SystemException systemEx) {
             statusHolder.setStatus(WXStatus.SYSTEM_ERROR);
-            statusHolder.setErrorMessage(systemEx.getMessage());
+            statusHolder.setMessage(systemEx.getMessage());
         }
     }
 

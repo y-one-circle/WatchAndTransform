@@ -1,14 +1,14 @@
 package io.github.yonecircle.watchtransform.exception;
 
-//入力ミスカスタム例外クラス
+//ユーザストップ例外クラス
 //RuntimeExceptionクラス（非checked例外クラスを継承）
-public class ValidationException extends RuntimeException {
+public class StoppedException extends RuntimeException {
     ////////////////////////////////////////////////////////////////////////////////////
-    //メッセージを格納する
+    //メッセージとエラー詳細を格納する
     //return:無し
-    //Note:ユーザが停止させた例外
+    //Note:ユーザが解決できない例外
     ////////////////////////////////////////////////////////////////////////////////////
-    public ValidationException(String message) {
+    public StoppedException(String message) {
         super(message);
-    }
+    } 
 }

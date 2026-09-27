@@ -83,8 +83,6 @@ public class WXController {
         System.out.println("returnCode        = " + dto.getReturnCode());
         System.out.println("suffixMode        = " + dto.getSuffixMode());
 
-            //ユーザ入力String→ロジック用正規化Path
-            //PathNormalizer normalizer = new PathNormalizer();
             Path endFileDir    = Paths.get(dto.getEndfileFolderPath());
             Path resultFileDir = Paths.get(dto.getTxtFolderPath());
             Path tempFileDir   = Paths.get(dto.getTempFolderPath());
@@ -109,7 +107,7 @@ public class WXController {
     public StatusResponse getStatus() {
         StatusResponse res = new StatusResponse();
         res.setStatus(statusHolder.getStatus());
-        res.setMessage(statusHolder.getErrorMessage());
+        res.setMessage(statusHolder.getMessage());
 
         return res;
     }
@@ -142,5 +140,20 @@ public class WXController {
     @ResponseBody
     public void saveConfig(@RequestBody WXExecuteRequest dto) throws SystemException {
         configService.saveProperties(dto);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    //
+    //return:void
+    //Notes:「監視停止」ボタンが押されると発火
+    ////////////////////////////////////////////////////////////////////////////////////
+    @PostMapping("/api/wx/stopwatching")
+    @ResponseBody
+    public void stopWatching() {
+        Thread thread = statusHolder.getThread();
+        if (thread == null) {
+            throw new ValidationException("現在、ファイル監視はしていません");
+        }
+        thread.interrupt();
     }
 }
