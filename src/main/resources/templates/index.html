@@ -98,10 +98,12 @@ async function execute() {
     });
 
     if (res.ok) {
-      // ★修正：alertではなくexecutionStatus画面に遷移する
+      // executionStatus画面に遷移する
       window.location.href = "/executionStatus";
     } else {
-      alert("実行の開始に失敗しました");
+      const data = await res.json();
+      const message = data.message;
+      alert(message);
     }
   } catch (e) {
     alert("エラーが発生しました");

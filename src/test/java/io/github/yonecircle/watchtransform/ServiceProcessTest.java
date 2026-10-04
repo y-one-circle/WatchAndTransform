@@ -13,6 +13,8 @@ import org.junit.jupiter.api.io.TempDir;
 import io.github.yonecircle.watchtransform.exception.SystemException;
 import io.github.yonecircle.watchtransform.exception.ValidationException;
 
+import java.util.concurrent.*;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ServiceProcessTest {
 
-    private StatusHolder statusHolder;
-    private Watcher watcher;
+    private StatusHolder statusHolder = new StatusHolder();
+    private Watcher watcher = new Watcher();
     private ServiceProcess serviceProcess = new ServiceProcess(statusHolder, watcher);
     Path tempDir;
     Path endFileDir;
@@ -52,9 +54,97 @@ public class ServiceProcessTest {
     //watchAndTransformのテスト系
     ////////////////////////////////////////////////////////////////////////////////////
     @Test
-    @DisplayName("異常系：endFileDirにアクセスできない時")
-    public void should_(){
+    @DisplayName("異常系：endFileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
+    public void should_throwValidationException_whene_endFileNotFound(){
+        //存在しないendFileDirを生成
+        Path fakeEndFileDir = tempDir.resolve("fakeEndFileDir");
+        //実行
+        serviceProcess.watchAndTransform(fakeEndFileDir, textFileDir, tempFileDir, "0", "0");
+        //検証
+        assertAll(
+            "ステータスかメッセージが期待値ではありません",
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus(), "ステータスがでVALIDATION_ERRORありません"),
+            () -> assertEquals
+                ("監視ディレクトリが見つかりませんでした：" + fakeEndFileDir.toString(), statusHolder.getMessage(), 
+            "メッセージが正しくありません")
+        );
+    }
+    @Test
+    @DisplayName("異常系：textFileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
+    public void should_throwValidationException_whene_textFileNotFound(){
+        //存在しないtextFileDirを生成
+        Path fakeTextFileDir = tempDir.resolve("fakeTextFileDir");
+        //実行
+        serviceProcess.watchAndTransform(endFileDir, fakeTextFileDir, tempFileDir, "0", "0");
+        //検証
+        assertAll(
+            "ステータスかメッセージが期待値ではありません",
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus()),
+            () -> assertEquals
+                ("テキストファイルディレクトリが見つかりませんでした：" + fakeTextFileDir.toString(), statusHolder.getMessage())
+        );
+    }
+    @Test
+    @DisplayName("異常系：tempileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
+    public void should_throwValidationException_whene_tempFileNotFound(){
+        //存在しないtextFileDirを生成
+        Path fakeTempFileDir = tempDir.resolve("fakeTempFileDir");
+        //実行
+        serviceProcess.watchAndTransform(endFileDir, textFileDir, fakeTempFileDir, "0", "0");
+        //検証
+        assertAll(
+            "ステータスかメッセージが期待値ではありません",
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus()),
+            () -> assertEquals
+                ("一時ディレクトリが見つかりませんでした：" + fakeTempFileDir.toString(), statusHolder.getMessage())
+        );
+    }
+    @Test
+    @DisplayName("異常系：Threadが割り込まれた時にステータスをSTOPPEDに変えるか")
+    public void should_changeStatus_toSTOPPED_when_interrupted() throws Exception {
 
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        System.out.println(endFileDir);
+        Runnable task = () -> serviceProcess.watchAndTransform
+            (endFileDir, textFileDir, tempDir, "0", "0");
+        //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
+        Future<?> future = executor.submit(task);
+        Thread.sleep(300);
+        executor.shutdownNow();
+        //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
+        future.get(3, TimeUnit.SECONDS);
+        //検証
+        assertEquals(WXStatus.STOPPED, statusHolder.getStatus());
+    }
+    @Test
+    @DisplayName("エラー後に再度watchAndTransform()を呼んでステータスの状態が正しく上書きされるか")
+    public void should_updateStatus_after_recallingWatchAndTransformFollowingError() throws Exception {
+        //存在しないendFileDirを生成
+        Path fakeEndFileDir = tempDir.resolve("fakeEndFileDir");
+        
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+         //Runnableの実装
+        Runnable failTask = () -> serviceProcess.watchAndTransform(fakeEndFileDir, textFileDir, tempFileDir, "0", "0");
+        //ExecutorServiceにタスクを渡す
+        executor.submit(failTask);
+        //監視が開始されるまで待つ
+        Thread.sleep(300);
+        //ここでVALIDATION_ERROR発生//
+
+        //再度watchAndTransform()を正しいパスを渡して呼ぶ
+        Runnable successTask = () -> serviceProcess.watchAndTransform(endFileDir, textFileDir, tempFileDir, "0", "0");
+        executor.submit(successTask);
+        Thread.sleep(300);
+        
+        //検証
+        assertAll(
+            "ステータスかメッセージか詳細原因が期待値ではありません",
+            () -> assertEquals(WXStatus.WATCHING, statusHolder.getStatus(), "ステータスがWATCHINGではありません"),
+            () -> assertEquals(endFileDir.toString(), statusHolder.getMessage(), "メッセージが期待値でありません"), 
+            () -> assertEquals(null, statusHolder.getCause(), "詳細原因がnullではありません")
+        );
+        executor.shutdownNow();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +202,10 @@ public class ServiceProcessTest {
         assertEquals(expected, actual, "FFENDファイルのペースト先Pathが期待値と異なります");
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////
+    //transform()のテスト系
+    ////////////////////////////////////////////////////////////////////////////////////
+    
     ////////////////////////////////////////////////////////////////////////////////////
     //transform()SuffixMode=0のテスト
     //transform()は各ServiceインスタンスにPathを渡しているだけのクラスなので
