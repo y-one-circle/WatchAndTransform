@@ -124,37 +124,4 @@ public class TextEditorTest {
         assertThrows(SystemException.class, ()-> {textEditor.edit(nonExistFile);}, 
                     "ソースファイルが存在しない時にSystemExeptionを投げれていません");
     }
-
-
-
-
-
-/*
-テストメソッドの命名規則「should_結果_when_条件」
-*/
-
-    /* 
-            Name Samaple.txt;
-            DataNumber 7;
-            DataList 7;
-                1 alpha 0.4500
-                2 beta 0.0500
-                3 gamma 0.2500
-                4 delta 0.4000
-                5 epsilon 0.5250
-	            6 zeta 0.1000
-	            7 eta 0.5750;""";
-    private String sampleDataEvenNumber = """
-            Name Samaple.txt;
-            DataNumber 8;
-            DataList 8;
-            	1 alpha 0.4500
-                2 beta 0.0500
-	            3 gamma 0.2500
-	            4 delta 0.4000
-	            5 epsilon 0.5250
-	            6 zeta 0.1000
-	            7 eta 0.5750
-                8 theta 0.7800;""";
-                */
 }

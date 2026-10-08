@@ -27,13 +27,6 @@ public class WXExecuteRequest {
             this.endfileFolderPath = "";
             return; //空文字だったらすぐ返す
         }
-        /*
-        String normalizedEndFileFolderPtah = endfileFolderPath.replace("\"", "");  //"を消す
-        char lastChar = normalizedEndFileFolderPtah.charAt(normalizedEndFileFolderPtah.length() -1);    //最後の文字が"であるかチェック
-                if (lastChar != '\\') { //最後の文字が"でないなら付け足す
-                    normalizedEndFileFolderPtah = normalizedEndFileFolderPtah + "\\";
-                }
-        */
         this.endfileFolderPath = endfileFolderPath;
     }
 
@@ -53,13 +46,6 @@ public class WXExecuteRequest {
             this.txtFolderPath = "";
             return; //空文字だったらすぐ返す
         }
-        /* 
-        String normalizedTxtFolderPath = txtFolderPath.replace("\"", "");    //"を消す
-        char lastChar = normalizedTxtFolderPath.charAt(normalizedTxtFolderPath.length() -1);    ////最後の文字が"であるかチェック
-            if (lastChar != '\\') { //最後の文字が"でないなら付け足す
-                normalizedTxtFolderPath = normalizedTxtFolderPath + "\\";
-            }
-        */
         this.txtFolderPath = txtFolderPath;
     }
     //TempFolderPath=====================================================================================================================
@@ -78,13 +64,6 @@ public class WXExecuteRequest {
             this.tempFolderPath = "";
             return; //空文字だったらすぐ返す
         }
-        /* 
-        String normalizedTempFolderPath = tempFolderPath.replace("\"", "");    //"を消す
-        char lastChar = normalizedTempFolderPath.charAt(normalizedTempFolderPath.length() -1);    ////最後の文字が"であるかチェック
-            if(lastChar != '\\') { //最後の文字が"でないなら付け足す
-                normalizedTempFolderPath = normalizedTempFolderPath + "\\";
-            }
-        */
         this.tempFolderPath = tempFolderPath;
     }
     //ReturnCode=====================================================================================================================
