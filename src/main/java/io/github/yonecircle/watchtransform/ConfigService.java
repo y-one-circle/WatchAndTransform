@@ -14,9 +14,18 @@ import io.github.yonecircle.watchtransform.exception.SystemException;
 
 @Service
 public class ConfigService {
+    
+    private final Path CONFIG_PATH;
+
+    //コンストラクタ
     //このアプリを起動したディレクトリを取得して、その中に wx.properties というファイルのパスを作る
-    private static final Path CONFIG_PATH =
-        Paths.get(System.getProperty("user.dir"), "wx.properties");
+    public ConfigService() {
+        CONFIG_PATH = Paths.get(System.getProperty("user.dir"), "wx.properties");
+    }
+    //テスト用コンストラクタ
+    public ConfigService(Path configPath) {
+        CONFIG_PATH = configPath;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////
     //Propertyファイルを読み込む
