@@ -61,7 +61,7 @@ public class WXController {
     @PostMapping("/api/wx/execute")
     @ResponseBody
     public ResponseEntity<Void> execute(@RequestBody WXExecuteRequest dto) {
-
+        //nullまたは空チェック
         if (dto.getEndfileFolderPath() == null || dto.getEndfileFolderPath().isEmpty()) {
             throw new ValidationException("監視フォルダのパスは入力されていません");
         }
@@ -139,6 +139,19 @@ public class WXController {
     @PostMapping("/api/wx/config")
     @ResponseBody
     public void saveConfig(@RequestBody WXExecuteRequest dto) throws SystemException {
+        //nullチェック
+        if (dto.getEndfileFolderPath() == null) {
+            throw new ValidationException("監視フォルダのパスに何も入力されていません");
+        }
+        if (dto.getTxtFolderPath() == null) {
+            throw new ValidationException("テキストフォルダのパスに何も入力されていません");
+        }
+        if (dto.getTempFolderPath() == null) {
+            throw new ValidationException("一時フォルダのパスに何も入力されていません");
+        }
+        if (dto.getReturnCode() == null) {
+            throw new ValidationException("リターンコードに何も入力されていません");
+        }
         configService.saveProperties(dto);
     }
 

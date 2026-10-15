@@ -53,6 +53,41 @@ public class ServiceProcessTest {
     ////////////////////////////////////////////////////////////////////////////////////
     //watchAndTransformのテスト系
     ////////////////////////////////////////////////////////////////////////////////////
+    @Test 
+    @DisplayName ("正常系：COMPLETEDまで到達するか")
+    public void should_changeStatus_toCOMPLETED_when_succeeded() throws Exception {
+        //各ファイルの準備
+        Path textFile = textFileDir.resolve("test.txt");
+        Files.writeString(textFile, """
+        Name SamapleOddNumber.txt;
+        DataNumber 7;
+        DataList 7;
+            1 alpha 0.4500
+            2 beta 0.0500
+            3 gamma 0.2500
+            4 delta 0.4000
+            5 epsilon 0.5250
+            6 zeta 0.1000
+            7 eta 0.5750"""
+        );
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Runnable task = () -> serviceProcess.watchAndTransform
+            (endFileDir, textFileDir, tempDir, "0", "0");
+        //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
+        Future<?> future = executor.submit(task);
+        Thread.sleep(300);
+        //endFileの作成
+        Path endFile = endFileDir.resolve("test.end");
+        Files.createFile(endFile);
+        //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
+        future.get(3, TimeUnit.SECONDS);
+        //デバッグ
+        System.out.println(statusHolder.getCause());
+        System.out.println(statusHolder.getMessage());
+        //検証
+        assertEquals(WXStatus.COMPLETED, statusHolder.getStatus());
+        executor.shutdownNow();
+    }
     @Test
     @DisplayName("異常系：endFileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
     public void should_throwValidationException_whene_endFileNotFound(){
@@ -118,7 +153,27 @@ public class ServiceProcessTest {
         assertEquals(WXStatus.STOPPED, statusHolder.getStatus());
     }
     @Test
-    @DisplayName("エラー後に再度watchAndTransform()を呼んでステータスの状態が正しく上書きされるか")
+    @DisplayName("異常系：SystemExeceptionが投げられた時にステータスをSYSTEM_ERRORに変えるか")
+    public void should_changeStatus_toSYSTEM_ERROR_when_SystemException_isThrown() throws Exception {
+        
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Runnable task = () -> serviceProcess.watchAndTransform
+            (endFileDir, textFileDir, tempDir, "0", "0");
+        //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
+        Future<?> future = executor.submit(task);
+        Thread.sleep(300);
+        //endFileの作成
+        Path endFile = endFileDir.resolve("test.end");
+        Files.createFile(endFile);
+        //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
+        future.get(3, TimeUnit.SECONDS);
+        //検証
+        assertEquals(WXStatus.SYSTEM_ERROR, statusHolder.getStatus());
+        //片付け
+        executor.shutdownNow();
+    }
+    @Test
+    @DisplayName("正常系：エラー後に再度watchAndTransform()を呼んでステータスの状態が正しく上書きされるか")
     public void should_updateStatus_after_recallingWatchAndTransformFollowingError() throws Exception {
         //存在しないendFileDirを生成
         Path fakeEndFileDir = tempDir.resolve("fakeEndFileDir");

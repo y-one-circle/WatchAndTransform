@@ -15,80 +15,34 @@ public class WXExecuteRequest {
     public String getEndfileFolderPath() {
         return endfileFolderPath;
     }
-
     public void setEndfileFolderPath(String endfileFolderPath) {
-        //nullチェック
-        if (endfileFolderPath == null) {
-            this.endfileFolderPath = null;
-            return; //nullだったらすぐ返す
-        } 
-        //空文字チェック
-        if  (endfileFolderPath.isEmpty()) {
-            this.endfileFolderPath = "";
-            return; //空文字だったらすぐ返す
-        }
         this.endfileFolderPath = endfileFolderPath;
     }
-
     //TxtFolderPath=====================================================================================================================
     public String getTxtFolderPath() {
         return txtFolderPath;
     }
-
     public void setTxtFolderPath(String txtFolderPath) {
-        //nullチェック
-        if (txtFolderPath == null) {
-            this.txtFolderPath = null;
-            return; //nullだったらすぐ返す
-        }
-        //空文字チェック
-        if (txtFolderPath.isEmpty()) {
-            this.txtFolderPath = "";
-            return; //空文字だったらすぐ返す
-        }
         this.txtFolderPath = txtFolderPath;
     }
     //TempFolderPath=====================================================================================================================
     public String getTempFolderPath() {
         return tempFolderPath;
     }
-
     public void setTempFolderPath(String tempFolderPath) {
-        //nullチェック
-        if (tempFolderPath == null) {
-            this.tempFolderPath = null;
-            return; //nullだったらすぐ返す
-        }
-        //空文字チェック
-        if (tempFolderPath.isEmpty()) {
-            this.tempFolderPath = "";
-            return; //空文字だったらすぐ返す
-        }
         this.tempFolderPath = tempFolderPath;
     }
     //ReturnCode=====================================================================================================================
     public String getReturnCode() {
         return returnCode;
     }
-
     public void setReturnCode(String returnCode) {
-        //nullチェック
-        if (returnCode == null) {
-            this.returnCode = null;
-            return; //nullだったらすぐ返す
-        }
-        //空文字チェック
-        if (returnCode.isEmpty()) {
-            this.returnCode = "";
-            return; //空文字だったらすぐ返す
-        }
         this.returnCode = returnCode;
     }
     //SuffixMode=====================================================================================================================
     public String getSuffixMode() {
         return suffixMode;
     }
-
     public void setSuffixMode(String suffixMode) {
         this.suffixMode = suffixMode;
     }
