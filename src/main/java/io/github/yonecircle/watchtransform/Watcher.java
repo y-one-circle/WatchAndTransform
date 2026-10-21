@@ -1,24 +1,23 @@
 package io.github.yonecircle.watchtransform;
 
+//import static java.nio.file.WatchEvent.*;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+
 import java.io.IOException;
+import java.nio.file.FileSystems;
 //import java.io.InterruptedIOException;
 //import java.nio.file.FileSystem;
 import java.nio.file.Path;
-//import java.nio.file.Paths;
-import java.nio.file.WatchService;
-import java.nio.file.WatchKey;
 import java.nio.file.WatchEvent;
 //import java.nio.file.Watchable;
+import java.nio.file.WatchKey;
+//import java.nio.file.Paths;
+import java.nio.file.WatchService;
 
 import org.springframework.stereotype.Component;
 
 import io.github.yonecircle.watchtransform.exception.StoppedException;
 import io.github.yonecircle.watchtransform.exception.SystemException;
-
-import java.nio.file.FileSystems;
-
-import static java.nio.file.StandardWatchEventKinds.*;
-//import static java.nio.file.WatchEvent.*;
 
 //ほぼ参照  https://qiita.com/opengl-8080/items/91a8ac36ab3d8600a529
 @Component

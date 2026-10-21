@@ -1,9 +1,18 @@
 package io.github.yonecircle.watchtransform;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,20 +21,25 @@ import org.junit.jupiter.api.io.TempDir;
 
 import io.github.yonecircle.watchtransform.exception.SystemException;
 import io.github.yonecircle.watchtransform.exception.ValidationException;
-
-import java.util.concurrent.*;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import io.github.yonecircle.watchtransform.service.TextCopy;
+import io.github.yonecircle.watchtransform.service.TextEditor;
+import io.github.yonecircle.watchtransform.service.TextMove;
+import io.github.yonecircle.watchtransform.service.XENDGenerator;
+import io.github.yonecircle.watchtransform.service.XENDMove;
 
 public class ServiceProcessTest {
 
     private StatusHolder statusHolder = new StatusHolder();
     private Watcher watcher = new Watcher();
-    private ServiceProcess serviceProcess = new ServiceProcess(statusHolder, watcher);
-    Path tempDir;
+    private TextCopy textCopy = new TextCopy();
+    private TextEditor textEditor = new TextEditor();
+    private TextMove textMove = new TextMove();
+    private XENDGenerator xendGenerator = new XENDGenerator();
+    private XENDMove xendMove = new XENDMove();
+
+    private ServiceProcess serviceProcess = new ServiceProcess(
+        statusHolder, watcher, textCopy, textEditor, textMove, xendGenerator, xendMove);
+    Path junitTempDir;
     Path endFileDir;
     Path textFileDir;
     Path tempFileDir;
@@ -33,19 +47,19 @@ public class ServiceProcessTest {
     String endfileNameSuffix1 = "Hoge_Suffix.end";
 
     @BeforeEach
-    public void setUp(@TempDir Path tempDir) throws IOException {
+    public void setUp(@TempDir Path junitTempDir) throws IOException {
 
-        this.tempDir = tempDir;
+        this.junitTempDir = junitTempDir;
         //endFileDir作成
-        Path endFileDir = tempDir.resolve("endFileDir");
+        Path endFileDir = junitTempDir.resolve("endFileDir");
         Files.createDirectory(endFileDir);
         this.endFileDir = endFileDir;
         //textFileDir作成
-        Path textFileDir = tempDir.resolve("textFileDir");
+        Path textFileDir = junitTempDir.resolve("textFileDir");
         Files.createDirectory(textFileDir);
         this.textFileDir = textFileDir;
         //tempFileDir作成
-        Path tempFileDir = tempDir.resolve("tempFileDir");
+        Path tempFileDir = junitTempDir.resolve("tempFileDir");
         Files.createDirectory(tempFileDir);
         this.tempFileDir = tempFileDir;
     }
@@ -72,7 +86,7 @@ public class ServiceProcessTest {
         );
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Runnable task = () -> serviceProcess.watchAndTransform
-            (endFileDir, textFileDir, tempDir, "0", "0");
+            (endFileDir, textFileDir, tempFileDir, "0", "0");
         //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
         Future<?> future = executor.submit(task);
         Thread.sleep(300);
@@ -81,18 +95,15 @@ public class ServiceProcessTest {
         Files.createFile(endFile);
         //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
         future.get(3, TimeUnit.SECONDS);
-        //デバッグ
-        System.out.println(statusHolder.getCause());
-        System.out.println(statusHolder.getMessage());
         //検証
         assertEquals(WXStatus.COMPLETED, statusHolder.getStatus());
         executor.shutdownNow();
     }
     @Test
     @DisplayName("異常系：endFileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
-    public void should_throwValidationException_whene_endFileNotFound(){
+    public void should_throwValidationException_when_endFileNotFound(){
         //存在しないendFileDirを生成
-        Path fakeEndFileDir = tempDir.resolve("fakeEndFileDir");
+        Path fakeEndFileDir = tempFileDir.resolve("fakeEndFileDir");
         //実行
         serviceProcess.watchAndTransform(fakeEndFileDir, textFileDir, tempFileDir, "0", "0");
         //検証
@@ -106,9 +117,9 @@ public class ServiceProcessTest {
     }
     @Test
     @DisplayName("異常系：textFileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
-    public void should_throwValidationException_whene_textFileNotFound(){
+    public void should_throwValidationException_when_textFileNotFound(){
         //存在しないtextFileDirを生成
-        Path fakeTextFileDir = tempDir.resolve("fakeTextFileDir");
+        Path fakeTextFileDir = junitTempDir.resolve("fakeTextFileDir");
         //実行
         serviceProcess.watchAndTransform(endFileDir, fakeTextFileDir, tempFileDir, "0", "0");
         //検証
@@ -121,9 +132,9 @@ public class ServiceProcessTest {
     }
     @Test
     @DisplayName("異常系：tempileDirにアクセスできない時、適切なステータスとメッセージをセットするか")
-    public void should_throwValidationException_whene_tempFileNotFound(){
-        //存在しないtextFileDirを生成
-        Path fakeTempFileDir = tempDir.resolve("fakeTempFileDir");
+    public void should_throwValidationException_when_tempFileNotFound(){
+        //存在しないtempFileDirを生成
+        Path fakeTempFileDir = junitTempDir.resolve("fakeTempFileDir");
         //実行
         serviceProcess.watchAndTransform(endFileDir, textFileDir, fakeTempFileDir, "0", "0");
         //検証
@@ -142,7 +153,7 @@ public class ServiceProcessTest {
 
         System.out.println(endFileDir);
         Runnable task = () -> serviceProcess.watchAndTransform
-            (endFileDir, textFileDir, tempDir, "0", "0");
+            (endFileDir, textFileDir, tempFileDir, "0", "0");
         //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
         Future<?> future = executor.submit(task);
         Thread.sleep(300);
@@ -153,12 +164,12 @@ public class ServiceProcessTest {
         assertEquals(WXStatus.STOPPED, statusHolder.getStatus());
     }
     @Test
-    @DisplayName("異常系：SystemExeceptionが投げられた時にステータスをSYSTEM_ERRORに変えるか")
+    @DisplayName("異常系：SystemExceptionが投げられた時にステータスをSYSTEM_ERRORに変えるか")
     public void should_changeStatus_toSYSTEM_ERROR_when_SystemException_isThrown() throws Exception {
         
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Runnable task = () -> serviceProcess.watchAndTransform
-            (endFileDir, textFileDir, tempDir, "0", "0");
+            (endFileDir, textFileDir, tempFileDir, "0", "0");
         //タスク内の処理が完了するまで待つためにFuture<?>で受け取る形にする
         Future<?> future = executor.submit(task);
         Thread.sleep(300);
@@ -176,7 +187,7 @@ public class ServiceProcessTest {
     @DisplayName("正常系：エラー後に再度watchAndTransform()を呼んでステータスの状態が正しく上書きされるか")
     public void should_updateStatus_after_recallingWatchAndTransformFollowingError() throws Exception {
         //存在しないendFileDirを生成
-        Path fakeEndFileDir = tempDir.resolve("fakeEndFileDir");
+        Path fakeEndFileDir = junitTempDir.resolve("fakeEndFileDir");
         
         ExecutorService executor = Executors.newSingleThreadExecutor();
          //Runnableの実装
@@ -209,7 +220,7 @@ public class ServiceProcessTest {
     @DisplayName("正常系：拡張子を除いた文字列を返すか")
     public void should_removeExtension () {
         String expectedString = "Hoge";
-        assertEquals(serviceProcess.removeExtension(endfileNameSuffix0), expectedString,
+        assertEquals(expectedString, serviceProcess.removeExtension(endfileNameSuffix0),
         "拡張子が適切に取り除かれていません");
     }
 

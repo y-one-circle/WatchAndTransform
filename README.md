@@ -2,7 +2,7 @@
 
 ## 概要
 ファイルを監視し、テキストファイルを編集した上で、処理が完了したことを示すWXendファイルを出力するWebツールです。Web UIから監視ディレクトリと変換ルールを設定できます。WXendファイルは、変換処理が完了したことを後続処理へ知らせるための完了通知ファイルとして扱っています。
-実行後は画面が遷移し、「監視中」→「変換処理実行中」→「WX完了」という処理の進捗をブラウザ上でリアルタイムに確認できます。
+実行後は画面が遷移し、「監視中」→「変換処理実行中」→「WX完了」という処理の進捗をブラウザ上でリアルタイムに確認できます。また、監視中はいつでも「監視停止」ボタンで処理を中断できます。
 
 ## 作った背景
 現職のQA業務で外部ソフトの出力に対する、こちらのソフトの挙動の手動チェック作業が繰り返し発生しており、
@@ -15,7 +15,7 @@
 1. Web UI（index画面）にアクセスすると、保存済みのプロパティファイルから前回の設定値を読み込んで入力欄に反映する
 2. Web UIから監視ディレクトリ、テキストファイルディレクトリ、一時ファイルディレクトリ、リターンコード、SuffixModeを設定する
 3. 「実行」ボタンを押すと非同期でWX処理が開始され、画面はexecutionStatus画面へ遷移する
-4. executionStatus画面はステータスAPIを1秒間隔でポーリングし、現在の処理状況を表示し続ける
+4. executionStatus画面はステータスAPIを3秒間隔でポーリングし、現在の処理状況を表示し続ける
 5. サーバ側では指定ディレクトリの監視を開始する（ステータス：監視中）
 6. endファイルの作成を検知する
 7. 検知したendファイルに対応するテキストファイルを一時ファイルディレクトリにコピーする（ステータス：変換処理実行中）
@@ -23,7 +23,8 @@
 9. 変換後のテキストファイルを、SuffixModeに応じたファイル名で元のディレクトリへ移動する
 10. 処理完了を示すWXendファイルへリターンコードを書き込んで生成し、監視ディレクトリへ移動する
 11. 全処理が正常終了するとステータスが完了になり、ブラウザ側のポーリングが「WX完了」を表示してポーリングを停止する
-12. 途中でユーザ入力の不備やI/Oエラーが発生した場合はステータスがエラー系に変わり、画面にエラーメッセージが表示される
+12. 監視中にexecutionStatus画面の「監視停止」ボタンを押すと、サーバ側の監視スレッドをinterruptしてステータスを「ユーザーストップ」にし、ポーリングを停止する
+13. 途中でユーザ入力の不備やI/Oエラーが発生した場合はステータスがエラー系に変わり、画面にエラーメッセージが表示される
 
 ## 技術選定の理由
 |技術 | 選定理由 |
@@ -33,38 +34,33 @@
 |  Thymeleaf | Spring Bootと親和性の高いテンプレートエンジンで、画面（index/executionStatus）の切り替えをController側のルーティングだけで完結できるためです。|
 
 ## 構成
-- Controller（WXController）：画面遷移用のエンドポイント（index, executionStatus）と、API用のエンドポイント（/api/wx/execute, /api/wx/status, /api/wx/config）を提供する
+- Controller（WXController）：画面遷移用のエンドポイント（index, executionStatus）と、API用のエンドポイント（/api/wx/execute, /api/wx/status, /api/wx/config, /api/wx/stopwatching）を提供する
 - ServiceProcess：監視から変換処理までの一連の流れを@Asyncで非同期に実行し、各段階でStatusHolderへ状態を反映する
-- Watcher：WatchServiceを使ってディレクトリを監視し、.endファイルの作成を検知する
+- Watcher：WatchServiceを使ってディレクトリを監視し、.endファイルの作成を検知する。スレッドのinterruptを受けるとStoppedExceptionを送出する
 - Service群（TextCopy / TextEditor / TextMove / XENDGenerator / XENDMove）：ファイルのコピー・編集・移動・XENDファイル生成という単一責務ごとにクラスを分割している
-- StatusHolder / WXStatus：現在の処理状態（WAITING / WATCHING / PROCESSING / COMPLETED / VALIDATION_ERROR / SYSTEM_ERROR）とエラーメッセージを一元管理する
+- StatusHolder / WXStatus：現在の処理状態（WAITING / WATCHING / PROCESSING / COMPLETED / VALIDATION_ERROR / SYSTEM_ERROR / STOPPED）と、エラーメッセージ・監視スレッドを一元管理する
 - ConfigService：入力されたパス等をwx.propertiesへ保存・再読込する
-- exception（ValidationException / SystemException / GlobalExceptionHandler）：ユーザ起因のエラーとシステム起因のエラーを型で区別し、@ControllerAdviceで統一的にレスポンスへ変換する
+- exception（ValidationException / SystemException / StoppedException / GlobalExceptionHandler）：ユーザ起因のエラー・システム起因のエラー・ユーザによる停止を型で区別し、@ControllerAdviceで統一的にレスポンスへ変換する
 
 ## 設計上の判断と理由
 - **コンストラクタインジェクションを用いることでフィールドをfinalにできるようにしました。
 - **サービス層を設けることでビジネスロジックを分離**：サービスクラスでパスの生成を一括で担うことで、パス生成のミスを発見しやすくしました。QAエンジニアの視点からテストのしやすさに配慮しました。
 - **サービスクラス、監視クラスの入出力をコントローラーに集約**：カプセル化を狙うことでそれぞれの機能でテストを実施しやすく、早い段階で機能の問題点を洗い出すことができました。
-- **内部処理の状態をenumとして持つことで、取りうる値を型レベルで制限しました**：WXStatus enumで状態を6種類に限定し、StatusHolderで一元管理することで、ステータスAPIとフロント側の表示ロジックが対応しやすくなりました。
-- **例外を2種類に分けてユーザへの通知を改善**：ValidationException（ユーザが対処できる入力ミス）とSystemException（ユーザが対処できないI/O等のエラー）を分離し、GlobalExceptionHandlerとStatusHolder経由でexecutionStatus画面にエラーメッセージとして表示できるようにしました。
-- **非同期処理の進捗をポーリングで可視化**：@Asyncで別スレッド実行しつつ、フロント側は1秒間隔でステータスAPIを叩くことで、処理完了を待つ間もユーザが今どの段階かを把握できるようにしました。
+- **内部処理の状態をenumとして持つことで、取りうる値を型レベルで制限しました**：WXStatus enumで状態を7種類に限定し、StatusHolderで一元管理することで、ステータスAPIとフロント側の表示ロジックが対応しやすくなりました。
+- **例外を3種類に分けてユーザへの通知を改善**：ValidationException（ユーザが対処できる入力ミス）、SystemException（ユーザが対処できないI/O等のエラー）、StoppedException（ユーザ自身による停止）を分離し、GlobalExceptionHandlerとStatusHolder経由でexecutionStatus画面にメッセージとして表示できるようにしました。
+- **非同期処理の進捗をポーリングで可視化**：@Asyncで別スレッド実行しつつ、フロント側は3秒間隔でステータスAPIを叩くことで、処理完了を待つ間もユーザが今どの段階かを把握できるようにしました。
+- **監視スレッドをStatusHolderで保持し、ユーザ操作で中断可能にしました**：WatchServiceのtake()はイベントが来るまで無限に待機するため、スレッド参照をStatusHolderに持たせてinterrupt()できるようにし、ユーザが監視を自分の意思で止められるようにしました。
 
 ## 工夫した点
 - キーバリューのプロパティファイル情報を保存することで、ユーザーが毎回ディレクトリと変換ルールを入力しなくて済むようにしました。
 - ステータスをenumで細分化してAPIから返すことで、画面側は状態名と日本語表示のマッピングだけを持てばよく、表示ロジックとサーバ側のロジックを疎結合にしました。
+- 監視中にユーザが処理を止めたいケースを想定し、「監視停止」ボタンと専用のステータス・例外を用意することで、強制終了に頼らずアプリ内で安全に処理を中断できるようにしました。
 
 ## 現状の課題・今後やること
-- [x] テストコードを作成します → Calculator/TextCopy/TextEditor/TextMove/XENDGenerator/XENDMove/ServiceProcessの各テストクラスと、Spring Bootの起動確認テストを作成済み
-- [ ] ファイル検知、ファイル作成などのイベントをログで確認できるようにします（現状はexecute()内にSystem.out.printlnによる確認用出力があるのみで、正式なログ基盤は未導入）
+- [x] テストコードを作成します → Service群（TextCopy/TextEditor/TextMove/XENDGenerator/XENDMove）、ServiceProcess、Watcher、ConfigService、WXController、GlobalExceptionHandlerの各テストクラスと、Spring Bootの起動確認テストを作成済み
+- [ ] ファイル検知、ファイル作成などのイベントをログで確認できるようにします（現状はexecute()やWatcher内にSystem.out.printlnによる確認用出力があるのみで、正式なログ基盤は未導入）
 - [ ] コントローラーに処理が集まり過ぎている点を解消します（WXController.execute()内に残っている入力バリデーションとString→Pathの変換処理を、専用クラスへ切り出す予定）
-- [ ] 本体コードから未使用になったCalculatorクラス（テストからのみ参照）を整理します
-
-## v1（ReadMe.txt）からの主な変更点
-- 非同期実行＋ステータスポーリングによる進捗表示（監視中／変換処理実行中／WX完了）の仕組みを追加
-- 「例外処理が不十分」だった課題を解消し、ValidationException / SystemException / GlobalExceptionHandlerによる画面通知を実装済みに更新
-- 「テストコードを作成します」だったTODOを実施済みに更新（8テストクラス）
-- 構成セクションを、実際のクラス名（WXController, ServiceProcess, Watcher, StatusHolder, ConfigService等）で具体化
-- 新たな課題として、コントローラーに残る入力バリデーション/Path変換ロジックの切り出しと、未使用のCalculatorクラスの整理を追記
+- [x] 本体コードから未使用になったCalculatorクラス（テストからのみ参照）を整理します → 削除済み
 
 ## 動作確認方法
 ```bash

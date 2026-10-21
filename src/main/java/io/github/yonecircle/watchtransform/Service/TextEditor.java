@@ -1,16 +1,18 @@
 package io.github.yonecircle.watchtransform.service;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.io.IOException;
-import java.util.regex.Pattern;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.stereotype.Service;
 
 import io.github.yonecircle.watchtransform.exception.SystemException;
 
-import java.util.regex.Matcher;
-
+@Service
 public class TextEditor {
     ///////////////////////////////////////////////////////////////////////////////////////
     //ファイルを編集して、ファイル名にSuffixを付ける
@@ -23,9 +25,9 @@ public class TextEditor {
             //読み込み
             List<String> lines = Files.readAllLines(textfilePath, StandardCharsets.UTF_8);
             //変換
-            List<String> taransformedLines = transform(lines);
+            List<String> transformedLines = transform(lines);
             //編集後のsubListをファイルに書き戻す
-            Files.write(textfilePath, taransformedLines, StandardCharsets.UTF_8);
+            Files.write(textfilePath, transformedLines, StandardCharsets.UTF_8);
         }catch(IOException ioEx){
             throw new SystemException("テキストファイルの読み込みに失敗しました" ,ioEx);
         }
@@ -59,9 +61,9 @@ public class TextEditor {
 //==================================================================================================
     //最後の空白を消してSuffixを付け足す
     String addSuffixToNameLine(String line) {
-         String newline_name = line.stripTrailing();
-         newline_name = newline_name.replace(".", "_Suffix.");
-         return newline_name;
+        String newline_name = line.stripTrailing();
+        newline_name = newline_name.replace(".", "_Suffix.");
+        return newline_name;
     }
 
     //数字を半分にする

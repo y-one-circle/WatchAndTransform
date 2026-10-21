@@ -1,13 +1,10 @@
 package io.github.yonecircle.watchtransform.dto;
 
-import org.springframework.stereotype.Component;
-
 import io.github.yonecircle.watchtransform.WXStatus;
 
 ////////////////////////////////////////////////////////////////////////////////////
 //ステータスとエラー内容を伝える入力用DTO
 ////////////////////////////////////////////////////////////////////////////////////
-@Component
 public class StatusResponse {
     
     private WXStatus status;

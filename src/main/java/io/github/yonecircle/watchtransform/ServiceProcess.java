@@ -1,19 +1,20 @@
 package io.github.yonecircle.watchtransform;
-import java.io.File;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import io.github.yonecircle.watchtransform.exception.StoppedException;
+import io.github.yonecircle.watchtransform.exception.SystemException;
 import io.github.yonecircle.watchtransform.exception.ValidationException;
 import io.github.yonecircle.watchtransform.service.TextCopy;
 import io.github.yonecircle.watchtransform.service.TextEditor;
 import io.github.yonecircle.watchtransform.service.TextMove;
 import io.github.yonecircle.watchtransform.service.XENDGenerator;
 import io.github.yonecircle.watchtransform.service.XENDMove;
-import io.github.yonecircle.watchtransform.exception.StoppedException;
-import io.github.yonecircle.watchtransform.exception.SystemException;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 @Service
 
@@ -21,10 +22,22 @@ public class ServiceProcess {
 
     private final StatusHolder statusHolder;
     private final Watcher watcher;
+    private final TextCopy textCopy;
+    private final TextEditor textEditor;
+    private final TextMove textMove;
+    private final XENDGenerator xendGenerator;
+    private final XENDMove xendMove;
 
-    public ServiceProcess(StatusHolder statusHolder, Watcher watcher) {
+    public ServiceProcess
+        (StatusHolder statusHolder, Watcher watcher,
+        TextCopy textCopy, TextEditor textEditor, TextMove textMove, XENDGenerator xendGenerator, XENDMove xendMove) {
         this.statusHolder = statusHolder;
         this.watcher = watcher;
+        this.textCopy = textCopy;
+        this.textEditor = textEditor;
+        this.textMove = textMove;
+        this.xendGenerator = xendGenerator;
+        this.xendMove = xendMove;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -100,12 +113,10 @@ public class ServiceProcess {
         //TextCopy
         Path copySource= this.resolveTxtPathFromEndFile(endfileName, resultFileDir);
         Path copyTarget = this.resolveCopytargetPath(endfileName, tempFileDir);
-        TextCopy textCopy = new TextCopy();
-        textCopy.copy(copySource, copyTarget);
+        this.textCopy.copy(copySource, copyTarget);
 
         //TextEdit
-        TextEditor textEditor = new TextEditor();
-        textEditor.edit(copyTarget);
+        this.textEditor.edit(copyTarget);
 
         /*
         TextRenamePaste
@@ -119,18 +130,15 @@ public class ServiceProcess {
         } else {
             text_renametarget_Object = this.resolveRenameTargetPathSuffixMode1(resultFileDir, endfileName);
         }
-        TextMove textMove = new TextMove();
-        textMove.textMove(copyTarget, text_renametarget_Object);
+        this.textMove.textMove(copyTarget, text_renametarget_Object);
 
         //XENDファイルの生成
         Path xendGenerateTarget = this.resolveGenerateTargetXendPath(tempFileDir, endfileName);
-        XENDGenerator xEndGenerator = new XENDGenerator();
-        xEndGenerator.xendGenerator(xendGenerateTarget, returnCode);
+        this.xendGenerator.xendGenerator(xendGenerateTarget, returnCode);
 
         //XENDファイルの移動
         Path xendPasteTarget = this.resolvePasteTargetXendPath(endFileDir, endfileName);
-        XENDMove xEndPaste = new XENDMove();
-        xEndPaste.xendMove(xendGenerateTarget, xendPasteTarget);
+        this.xendMove.xendMove(xendGenerateTarget, xendPasteTarget);
     }
 
 
@@ -149,8 +157,8 @@ public class ServiceProcess {
     ////////////////////////////////////////////////////////////////////////////////////
     //拡張子を除くメソッド
     public String removeExtension(String absoPath){
-        File file = new File(absoPath);
-        String fileName = file.getName();
+        Path path = Paths.get(absoPath);
+        String fileName = path.getFileName().toString();
         String baseName = fileName.substring(0, fileName.lastIndexOf("."));
         return baseName;
     }

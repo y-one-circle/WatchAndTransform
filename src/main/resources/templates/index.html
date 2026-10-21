@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Watch&Transform</title>
- 
+
   <!-- favicon -->
-  <link rel="icon" href="/akabeko.ico">
+  <link rel="icon" href="/wx2.ico">
   <link rel="stylesheet" href="/css/style.css">
- 
+
   <style>
     #loading {
       display: none;
@@ -15,31 +15,31 @@
   </style>
 </head>
 <body>
- 
+
 <h1>Watch&Transform</h1>
- 
+
 <img id="loading" src="/images/sample.gif" alt="loading">
- 
+
 <div>
   <label>endfileFolderPath</label><br>
   <input id="endfileFolderPath" size="80">
 </div>
- 
+
 <div>
   <label>txtFolderPath</label><br>
   <input id="txtFolderPath" size="80">
 </div>
- 
+
 <div>
   <label>tempFolderPath</label><br>
   <input id="tempFolderPath" size="80">
 </div>
- 
+
 <div>
   <label>returnCode</label><br>
   <input id="returnCode">
 </div>
- 
+
 <br>
 <label>
   <input type="radio" name="suffixmode" value="0" checked>
@@ -54,9 +54,9 @@
 <br>
 <button onclick="saveConfig()">パス情報を記憶する</button>
 <button onclick="execute()">実行</button>
- 
+
 <script>
- 
+
 //起動時：設定ファイルから値を読み込んで入力欄に反映
 window.onload = async function () {
   try {
@@ -65,19 +65,19 @@ window.onload = async function () {
       const err =await res.json();
       throw new Error(err.message);
     }
- 
+
     const config = await res.json();
- 
+
     document.getElementById("endfileFolderPath").value = config.endfileFolderPath || "";
     document.getElementById("txtFolderPath").value = config.txtFolderPath || "";
     document.getElementById("tempFolderPath").value = config.tempFolderPath || "";
     document.getElementById("returnCode").value = config.returnCode || "";
- 
+
   } catch (err) {
     alert(err.message);
   }
 };
- 
+
 //実行ボタン
 async function execute() {
   document.getElementById("loading").style.display = "block";
@@ -111,7 +111,7 @@ async function execute() {
     document.getElementById("loading").style.display = "none";
   }
 }
- 
+
 //記憶するボタン：現在の入力値を properties に保存
 async function saveConfig() {
   const body = {
@@ -120,14 +120,14 @@ async function saveConfig() {
     tempFolderPath: document.getElementById("tempFolderPath").value,
     returnCode: document.getElementById("returnCode").value
   };
- 
+
   try {
     const res = await fetch("/api/wx/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
- 
+
     if (res.ok) {
       alert("設定を記憶しました");
     } else {
@@ -138,6 +138,6 @@ async function saveConfig() {
   }
 }
 </script>
- 
+
 </body>
 </html>

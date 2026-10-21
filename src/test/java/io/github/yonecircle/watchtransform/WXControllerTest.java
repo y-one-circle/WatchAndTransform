@@ -1,26 +1,25 @@
 package io.github.yonecircle.watchtransform;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.nio.file.Paths;
+import java.util.Properties;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import io.github.yonecircle.watchtransform.dto.StatusResponse;
 import io.github.yonecircle.watchtransform.dto.WXExecuteRequest;
 import io.github.yonecircle.watchtransform.exception.SystemException;
 import io.github.yonecircle.watchtransform.exception.ValidationException;
-
-import java.nio.file.Paths;
-import java.util.Properties;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 @ExtendWith(MockitoExtension.class)
 public class WXControllerTest {
