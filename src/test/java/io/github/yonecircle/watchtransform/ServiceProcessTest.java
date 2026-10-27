@@ -96,7 +96,7 @@ public class ServiceProcessTest {
         //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
         future.get(3, TimeUnit.SECONDS);
         //検証
-        assertEquals(WXStatus.COMPLETED, statusHolder.getStatus());
+        assertEquals(WXStatus.COMPLETED, statusHolder.getSnapshot().status());
         executor.shutdownNow();
     }
     @Test
@@ -107,11 +107,12 @@ public class ServiceProcessTest {
         //実行
         serviceProcess.watchAndTransform(fakeEndFileDir, textFileDir, tempFileDir, "0", "0");
         //検証
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
         assertAll(
             "ステータスかメッセージが期待値ではありません",
-            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus(), "ステータスがでVALIDATION_ERRORありません"),
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, snapshot.status(), "ステータスがでVALIDATION_ERRORありません"),
             () -> assertEquals
-                ("監視ディレクトリが見つかりませんでした：" + fakeEndFileDir.toString(), statusHolder.getMessage(), 
+                ("監視ディレクトリが見つかりませんでした：" + fakeEndFileDir.toString(), snapshot.message(), 
             "メッセージが正しくありません")
         );
     }
@@ -123,11 +124,12 @@ public class ServiceProcessTest {
         //実行
         serviceProcess.watchAndTransform(endFileDir, fakeTextFileDir, tempFileDir, "0", "0");
         //検証
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
         assertAll(
             "ステータスかメッセージが期待値ではありません",
-            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus()),
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, snapshot.status()),
             () -> assertEquals
-                ("テキストファイルディレクトリが見つかりませんでした：" + fakeTextFileDir.toString(), statusHolder.getMessage())
+                ("テキストファイルディレクトリが見つかりませんでした：" + fakeTextFileDir.toString(), snapshot.message())
         );
     }
     @Test
@@ -138,11 +140,12 @@ public class ServiceProcessTest {
         //実行
         serviceProcess.watchAndTransform(endFileDir, textFileDir, fakeTempFileDir, "0", "0");
         //検証
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
         assertAll(
             "ステータスかメッセージが期待値ではありません",
-            () -> assertEquals(WXStatus.VALIDATION_ERROR, statusHolder.getStatus()),
+            () -> assertEquals(WXStatus.VALIDATION_ERROR, snapshot.status()),
             () -> assertEquals
-                ("一時ディレクトリが見つかりませんでした：" + fakeTempFileDir.toString(), statusHolder.getMessage())
+                ("一時ディレクトリが見つかりませんでした：" + fakeTempFileDir.toString(), snapshot.message())
         );
     }
     @Test
@@ -161,7 +164,8 @@ public class ServiceProcessTest {
         //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
         future.get(3, TimeUnit.SECONDS);
         //検証
-        assertEquals(WXStatus.STOPPED, statusHolder.getStatus());
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
+        assertEquals(WXStatus.STOPPED, snapshot.status());
     }
     @Test
     @DisplayName("異常系：SystemExceptionが投げられた時にステータスをSYSTEM_ERRORに変えるか")
@@ -179,7 +183,8 @@ public class ServiceProcessTest {
         //タスク内の処理が完了まで待つのが目的のため返り値は捨てる
         future.get(3, TimeUnit.SECONDS);
         //検証
-        assertEquals(WXStatus.SYSTEM_ERROR, statusHolder.getStatus());
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
+        assertEquals(WXStatus.SYSTEM_ERROR, snapshot.status());
         //片付け
         executor.shutdownNow();
     }
@@ -204,11 +209,12 @@ public class ServiceProcessTest {
         Thread.sleep(300);
         
         //検証
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
         assertAll(
             "ステータスかメッセージか詳細原因が期待値ではありません",
-            () -> assertEquals(WXStatus.WATCHING, statusHolder.getStatus(), "ステータスがWATCHINGではありません"),
-            () -> assertEquals(endFileDir.toString(), statusHolder.getMessage(), "メッセージが期待値でありません"), 
-            () -> assertEquals(null, statusHolder.getCause(), "詳細原因がnullではありません")
+            () -> assertEquals(WXStatus.WATCHING, snapshot.status(), "ステータスがWATCHINGではありません"),
+            () -> assertEquals(endFileDir.toString(), snapshot.message(), "メッセージが期待値でありません"), 
+            () -> assertEquals(null, snapshot.cause(), "詳細原因がnullではありません")
         );
         executor.shutdownNow();
     }

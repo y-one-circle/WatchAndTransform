@@ -55,8 +55,7 @@ public class ServiceProcess {
             statusHolder.setThread(currentthread);
             
             //StatusHolderのメッセージと詳細原因のクリア
-            statusHolder.setMessage(null);
-            statusHolder.setCause(null);
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.WAITING, null, null));
 
             // ==============================================
             // Guard: 監視ディレクトリの存在チェック、テキストディレクトリ, 一時ディレクトリの存在チェック
@@ -66,28 +65,22 @@ public class ServiceProcess {
             validateDirectory(resultFileDir, "テキストファイルディレクトリ");
             validateDirectory(tempFileDir, "一時ディレクトリ");
             // 監視開始
-            statusHolder.setStatus(WXStatus.WATCHING);
-            statusHolder.setMessage(endFileDir.toString());
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.WATCHING, endFileDir.toString(), null));
             Path detectedEndFilePath = watcher.watcher(endFileDir);
 
             // 変換処理開始
-            statusHolder.setStatus(WXStatus.PROCESSING);
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.PROCESSING, null, null));
             transform(detectedEndFilePath, endFileDir, resultFileDir, tempFileDir, returnCode, suffixMode);
 
             //完了
-            statusHolder.setStatus(WXStatus.COMPLETED);
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.COMPLETED, null, null));
 
         } catch (ValidationException validationEx) {
-            statusHolder.setStatus(WXStatus.VALIDATION_ERROR);
-            statusHolder.setMessage(validationEx.getMessage());
-        
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.VALIDATION_ERROR, validationEx.getMessage(), null));
         } catch (StoppedException stoppedEx) {
-            statusHolder.setStatus(WXStatus.STOPPED);
-            statusHolder.setMessage(stoppedEx.getMessage());
-
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.STOPPED, stoppedEx.getMessage(), null));
         } catch (SystemException systemEx) {
-            statusHolder.setStatus(WXStatus.SYSTEM_ERROR);
-            statusHolder.setMessage(systemEx.getMessage());
+            statusHolder.setSnapshot(new StatusSnapshot(WXStatus.SYSTEM_ERROR, systemEx.getMessage(), systemEx.getCause()));
         }
     }
 

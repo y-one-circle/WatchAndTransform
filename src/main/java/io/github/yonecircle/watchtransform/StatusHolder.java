@@ -8,36 +8,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class StatusHolder {
     
-    private WXStatus currentStatus = WXStatus.WAITING;  //ステータス
-    private String message = null;                 //メッセージ
-    private Throwable cause = null;                     //エラー原因詳細
-    private Thread currentThread = null;                 //スレッド
+    private volatile StatusSnapshot statusSnapshot = new StatusSnapshot
+        (WXStatus.WAITING, null, null);
 
-    //ステータスgetter, setter
-    public WXStatus getStatus(){
-        return this.currentStatus;
-    }
-    public void setStatus(WXStatus currentStatus) {
-        this.currentStatus = currentStatus;
+    private volatile Thread currentThread = null;
+
+    
+    //ステータス、エラーメッセージ、エラー原因詳細getter
+    public StatusSnapshot getSnapshot() {
+        return this.statusSnapshot;
     }
 
-    //エラーメッセージgetter, setter
-    public String getMessage() {
-        return this.message;
-    }
-    public void setMessage(String errorMessage) {
-        this.message = errorMessage;
+    //ステータス、エラーメッセージ、エラー原因詳細setter
+    public void setSnapshot(StatusSnapshot statusSnapshot) {
+        this.statusSnapshot = statusSnapshot;
     }
 
-    //エラー原因詳細getter, setter
-    public Throwable getCause() {
-        return this.cause;
-    }
-    public void setCause(Throwable cause) {
-        this.cause = cause;
-    }
-
-        //スレッドgetter, setter
+    //スレッドgetter, setter
     public Thread getThread() {
         return this.currentThread;
     }

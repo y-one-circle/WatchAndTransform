@@ -22,15 +22,18 @@ public class WXController {
     private final ServiceProcess serviceProcess;
     private final ConfigService configService;
     private final StatusHolder statusHolder;
+    private final WXExecuteRequestValidator wxExecuteRequestValidator;
 
     ////////////////////////////////////////////////////////////////////////////////////
     //Controllerが使うクラスを生成する
     //return:無し
     ////////////////////////////////////////////////////////////////////////////////////
-    public WXController(ServiceProcess serviceProcess, ConfigService configService, StatusHolder statusHolder) {
+    public WXController(ServiceProcess serviceProcess, ConfigService configService,
+                        StatusHolder statusHolder, WXExecuteRequestValidator wxExecuteRequestValidator) {
         this.serviceProcess = serviceProcess;
         this.configService = configService;
         this.statusHolder = statusHolder;
+        this.wxExecuteRequestValidator = wxExecuteRequestValidator;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -62,18 +65,7 @@ public class WXController {
     @ResponseBody
     public ResponseEntity<Void> execute(@RequestBody WXExecuteRequest dto) {
         //nullまたは空チェック
-        if (dto.getEndfileFolderPath() == null || dto.getEndfileFolderPath().isEmpty()) {
-            throw new ValidationException("監視フォルダのパスは入力されていません");
-        }
-        if (dto.getTxtFolderPath() == null || dto.getTxtFolderPath().isEmpty()) {
-            throw new ValidationException("テキストフォルダのパスは入力されていません");
-        }
-        if (dto.getTempFolderPath() == null || dto.getTempFolderPath().isEmpty()) {
-            throw new ValidationException("一時フォルダのパスは入力されていません");
-        }
-        if (dto.getReturnCode() == null || dto.getReturnCode().isEmpty()) {
-            throw new ValidationException("リターンコードが入力されていません");
-        }
+        wxExecuteRequestValidator.validateNotNullOrEmpty(dto);
 
         //確認用
         System.out.println("=== execute() called ===");
@@ -83,19 +75,19 @@ public class WXController {
         System.out.println("returnCode        = " + dto.getReturnCode());
         System.out.println("suffixMode        = " + dto.getSuffixMode());
 
-            Path endFileDir    = Paths.get(dto.getEndfileFolderPath());
-            Path resultFileDir = Paths.get(dto.getTxtFolderPath());
-            Path tempFileDir   = Paths.get(dto.getTempFolderPath());
+        Path endFileDir    = Paths.get(dto.getEndfileFolderPath());
+        Path resultFileDir = Paths.get(dto.getTxtFolderPath());
+        Path tempFileDir   = Paths.get(dto.getTempFolderPath());
 
-            //watchAndTransformを呼ぶだけで即returnする（@Asyncで別スレッド実行）
-            serviceProcess.watchAndTransform(
-                endFileDir,
-                resultFileDir,
-                tempFileDir,
-                dto.getReturnCode(),
-                dto.getSuffixMode());
+        //watchAndTransformを呼ぶだけで即returnする（@Asyncで別スレッド実行）
+        serviceProcess.watchAndTransform(
+            endFileDir,
+            resultFileDir,
+            tempFileDir,
+            dto.getReturnCode(),
+            dto.getSuffixMode());
 
-            return ResponseEntity.ok().build();
+        return ResponseEntity.ok().build();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -105,9 +97,10 @@ public class WXController {
     @GetMapping("/api/wx/status")
     @ResponseBody
     public StatusResponse getStatus() {
+        StatusSnapshot snapshot = statusHolder.getSnapshot();
         StatusResponse res = new StatusResponse();
-        res.setStatus(statusHolder.getStatus());
-        res.setMessage(statusHolder.getMessage());
+        res.setStatus(snapshot.status());
+        res.setMessage(snapshot.message());
 
         return res;
     }
@@ -139,19 +132,7 @@ public class WXController {
     @PostMapping("/api/wx/config")
     @ResponseBody
     public void saveConfig(@RequestBody WXExecuteRequest dto) throws SystemException {
-        //nullチェック
-        if (dto.getEndfileFolderPath() == null) {
-            throw new ValidationException("監視フォルダのパスに何も入力されていません");
-        }
-        if (dto.getTxtFolderPath() == null) {
-            throw new ValidationException("テキストフォルダのパスに何も入力されていません");
-        }
-        if (dto.getTempFolderPath() == null) {
-            throw new ValidationException("一時フォルダのパスに何も入力されていません");
-        }
-        if (dto.getReturnCode() == null) {
-            throw new ValidationException("リターンコードに何も入力されていません");
-        }
+        wxExecuteRequestValidator.validateNotNull(dto);
         configService.saveProperties(dto);
     }
 

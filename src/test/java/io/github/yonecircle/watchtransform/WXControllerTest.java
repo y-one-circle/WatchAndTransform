@@ -3,6 +3,8 @@ package io.github.yonecircle.watchtransform;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -29,6 +31,8 @@ public class WXControllerTest {
     ConfigService configService;
     @Mock
     StatusHolder statusHolder;
+    @Mock
+    WXExecuteRequestValidator requestValidator;
     @InjectMocks 
     WXController wxcontroller;
 
@@ -78,120 +82,20 @@ public class WXControllerTest {
             () -> assertEquals(ResponseEntity.ok().build(), response)
         );
     }
+    @Test 
+    @DisplayName ("異常系：ValidationExceptionが発生した時、watchAndTransformが呼ばれないか")
+    public void should_notInvokeWatchAndTransform_when_validationExeptionOccured() {
+        //DTOの準備
+        WXExecuteRequest dto = new WXExecuteRequest();
+        //スタブの設定
+        Mockito.doThrow(new ValidationException("テストメッセージ")).when(requestValidator).validateNotNullOrEmpty(dto);
+        //実施
+        assertThrows(ValidationException.class, ()-> wxcontroller.execute(dto)) ;
+        //検証
+        verifyNoInteractions(serviceProcess);
+    }
     
-    //nullまたは空チェック
-    @Test
-    @DisplayName ("異常系：監視フォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_endFolderPathIsNull_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath(null);
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("監視フォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：監視フォルダのパスが空の時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_endFolderPathIsEmptiy_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("監視フォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：テキストフォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_textFolderPathIsNull_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath(null);
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("テキストフォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：テキストフォルダのパスが空の時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_textFolderPathIsEmptiy_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("テキストフォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：一時フォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_tempFolderPathIsNull_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath(null);
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("一時フォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：一時フォルダのパスが空の時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_tempFolderPathIsEmptiy_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("");
-        dto.setReturnCode("TestCode");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("一時フォルダのパスは入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：リターンコードがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_returnCodeIsNull_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode(null);
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("リターンコードが入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：リターンコードが空の時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_returnCodeIsEmptiy_onExecute() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("");
-        dto.setSuffixMode("0");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> {wxcontroller.execute(dto);});
-        assertEquals("リターンコードが入力されていません", ex.getMessage());
-    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////
     //loadConfig()のテスト
@@ -242,11 +146,11 @@ public class WXControllerTest {
     @DisplayName ("正常系：中身が正しいステータスを返すか")
     public void should_returnCorrectStatus() {
         //スタブの設定
-        Mockito.when(statusHolder.getStatus()).thenReturn(WXStatus.PROCESSING);
-        Mockito.when(statusHolder.getMessage()).thenReturn("getStatus()のテスト中");
+        Mockito.when(statusHolder.getSnapshot()).thenReturn(new StatusSnapshot(WXStatus.PROCESSING, "getStatus()のテスト中", null));
         //実行
         StatusResponse actual = wxcontroller.getStatus();
         //検証
+        
         assertAll (
             "ステータスかメッセージが期待値でありません", 
             () -> assertEquals(WXStatus.PROCESSING, actual.getStatus(), "ステータスが期待値でありません"),
@@ -270,58 +174,6 @@ public class WXControllerTest {
         wxcontroller.saveConfig(dto);
         //検証
         Mockito.verify(configService).saveProperties(dto);
-    }
-    @Test
-    @DisplayName ("異常系：監視フォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_endFolderPathIsNull_onSaveConfig() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath(null);
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> wxcontroller.saveConfig(dto));
-        assertEquals("監視フォルダのパスに何も入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：テキストフォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_textFolderPathIsNull_onSaveConfig() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath(null);
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode("TestCode");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> wxcontroller.saveConfig(dto));
-        assertEquals("テキストフォルダのパスに何も入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：一時フォルダのパスがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_tempFolderPathIsNull_onSaveConfig() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath(null);
-        dto.setReturnCode("TestCode");
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> wxcontroller.saveConfig(dto));
-        assertEquals("一時フォルダのパスに何も入力されていません", ex.getMessage());
-    }
-    @Test
-    @DisplayName ("異常系：リターンコードがnullの時、ValidationExceptionを投げるか")
-    public void should_throwValidationException_when_returnCodeIsNull_onSaveConfig() {
-        //DTOの準備
-        WXExecuteRequest dto = new WXExecuteRequest();
-        dto.setEndfileFolderPath("TestPath");
-        dto.setTxtFolderPath("TestPath");
-        dto.setTempFolderPath("TestPath");
-        dto.setReturnCode(null);
-        //検証
-        ValidationException ex = assertThrows(ValidationException.class, () -> wxcontroller.saveConfig(dto));
-        assertEquals("リターンコードに何も入力されていません", ex.getMessage());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -350,5 +202,17 @@ public class WXControllerTest {
         assertThrows(ValidationException.class, () -> wxcontroller.stopWatching()
         , "threadが存在しないときにValidationExceptionが投げれられていません");
         
+    }
+    @Test 
+    @DisplayName ("異常系：ValidationExceptionが発生した時、savePropertiesが呼ばれないか")
+    public void should_notInvokesaveProperties_when_validationExeptionOccured() {
+        //DTOの準備
+        WXExecuteRequest dto = new WXExecuteRequest();
+        //スタブの設定
+        Mockito.doThrow(new ValidationException("テストメッセージ")).when(requestValidator).validateNotNull(dto);
+        //実施
+        assertThrows(ValidationException.class, ()-> wxcontroller.saveConfig(dto)) ;
+        //検証
+        verifyNoInteractions(configService);
     }
 }
