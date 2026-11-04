@@ -76,7 +76,7 @@ public class WatcherTest {
         //
         Throwable cause = null;
         try {
-            Path actPath = future.get(3, TimeUnit.SECONDS);
+            future.get(3, TimeUnit.SECONDS);
         } catch(ExecutionException e) {
             cause = e.getCause();
         }

@@ -3,6 +3,8 @@ package io.github.yonecircle.watchtransform.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.util.Objects;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -22,10 +24,12 @@ public class GlobalExceptionHandlerTest {
         //ValidationExceptionを作成して該当メソッドに渡す
         ValidationException validationEx = new ValidationException("バリデーション例外が発生");
         ResponseEntity<StatusResponse> response = globalExceptionHandler.handleValidationException(validationEx);
+        //Potential null pointer accessの警告を消すため、null確認
+        StatusResponse body = Objects.requireNonNull(response.getBody());
         //検証
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(), "HTTPステータスコードが一致しません");
-        assertEquals(WXStatus.VALIDATION_ERROR, response.getBody().getStatus(), "レスポンスボディのstatusが一致しません");
-        assertEquals("バリデーション例外が発生",response.getBody().getMessage(), "レスポンスボディのmessageが一致しません");
+        assertEquals(WXStatus.VALIDATION_ERROR, body.getStatus(), "レスポンスボディのstatusが一致しません");
+        assertEquals("バリデーション例外が発生", body.getMessage(), "レスポンスボディのmessageが一致しません");
     }
 
     @Test
@@ -34,10 +38,12 @@ public class GlobalExceptionHandlerTest {
         //SystemExceptionを作成して該当メソッドに渡す
         SystemException systemEx = new SystemException("システム例外が発生", new IOException("原因"));
         ResponseEntity<StatusResponse> response = globalExceptionHandler.handleSystemException(systemEx);
+        //Potential null pointer accessの警告を消すため、null確認
+        StatusResponse body = Objects.requireNonNull(response.getBody());
         //検証
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode(), "HTTPステータスコードが一致しません");
-        assertEquals(WXStatus.SYSTEM_ERROR, response.getBody().getStatus(), "レスポンスボディのstatusが一致しません");
-        assertEquals("システム例外が発生",response.getBody().getMessage(), "レスポンスボディのmessageが一致しません");
+        assertEquals(WXStatus.SYSTEM_ERROR, body.getStatus(), "レスポンスボディのstatusが一致しません");
+        assertEquals("システム例外が発生",body.getMessage(), "レスポンスボディのmessageが一致しません");
     }
     /*
     テストメソッドの命名規則「should_結果_when_条件」
