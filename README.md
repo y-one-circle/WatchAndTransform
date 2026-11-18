@@ -59,8 +59,29 @@
 ## 現状の課題・今後やること
 - [x] テストコードを作成します → Service群（TextCopy/TextEditor/TextMove/XENDGenerator/XENDMove）、ServiceProcess、Watcher、ConfigService、WXController、GlobalExceptionHandlerの各テストクラスと、Spring Bootの起動確認テストを作成済み
 - [ ] ファイル検知、ファイル作成などのイベントをログで確認できるようにします（現状はexecute()やWatcher内にSystem.out.printlnによる確認用出力があるのみで、正式なログ基盤は未導入）
-- [ ] コントローラーに処理が集まり過ぎている点を解消します（WXController.execute()内に残っている入力バリデーションとString→Pathの変換処理を、専用クラスへ切り出す予定）
+- [x] コントローラーに処理が集まり過ぎている点を解消します（WXController.execute()内に残っている入力バリデーションとString→Pathの変換処理を、専用クラスへ切り出す予定）
 - [x] 本体コードから未使用になったCalculatorクラス（テストからのみ参照）を整理します → 削除済み
+- [ ] WX処理の実行履歴をDBに永続化します。「いつ・どの設定で・どのファイルを処理し・どう終わったか」を後から追跡できるようにします。
+- [ ] 設定の保存先をwx.propertiesからDBへ移行します。現状の設定保存は起動ディレクトリが変わると前回設定を読めないかつ、複数の設定を保存できません。
+
+### DBテーブル設計（予定）
+
+`wx_config`（設定プロファイル）: 1件しか保持できない現状のプロパティファイルを、名前付きプロファイルとして複数保存できるようにする
+
+|カラム | 型 | NULL | 内容 |
+|------|----|------|------|
+
+
+
+
+インデックス：started_at の降順（履歴一覧の並び替え用）
+
+### DB設計上の判断と理由（予定）
+
+- **履歴側にパス等を重複して保持します（意図的な非正規化）**：正規化の観点ではconfig_idだけを持てば足りますが、設定は後から編集されるため、正規化したままでは過去の履歴を開いたときに実行当時と異なるパスが表示されてしまいます。履歴は監査ログとしての性質を持つため、実行時点の値をスナップショットとして保持する設計にします。
+- **statusはEnumType.STRINGで保存します**：EnumType.ORDINALだとWXStatusの定義順を変更した瞬間に過去データの意味が壊れるためです。
+- **NULL許容カラムは終了状態と対応づけて定義します**：COMPLETEDならerror_messageはNULL、監視中に停止したSTOPPEDやディレクトリ不正のVALIDATION_ERRORならdetected_file_nameがNULLになる、というように、取りうる組み合わせを整理した上でNULL制約を決めます。
+- **履歴の登録はWXHistoryServiceに切り出します**：既存の「単一責務ごとにクラスを分割する」方針に合わせ、ServiceProcessからRepositoryを直接触らない構成にします。
 
 ## 動作確認方法
 ```bash

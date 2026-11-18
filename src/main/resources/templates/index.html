@@ -40,7 +40,6 @@
   <input id="returnCode">
 </div>
 
-<br>
 <label>
   <input type="radio" name="suffixmode" value="0" checked>
     SuffixMode=0 　編集後のtxtにSuffixを付けて出力
@@ -50,13 +49,52 @@
   <input type="radio" name="suffixmode" value="1" >
     SuffixMode=1 　編集後のtxtからSuffixを取って出力
 </label>
-<br>
+
 <br>
 <button onclick="saveConfig()">パス情報を記憶する</button>
 <button onclick="execute()">実行</button>
+<br>
+<br>
+<br>
+<br>
+<label>DB</label>
+<br>
+<div>
+  <label>Setting Name</label><br>
+  <input id="db-settingName" size="80">
+</div>
+<div>
+  <label>Endfile Folder Path</label><br>
+  <input id="db-endfileFolderPath" size="80">
+</div>
+<div>
+  <label>Txt Folder Path</label><br>
+  <input id="db-txtFolderPath" size="80">
+</div>
+<div>
+  <label>Temp Folder Path</label><br>
+  <input id="db-tempFolderPath" size="80">
+</div>
+<div>
+  <label>Return Code</label><br>
+  <input id="db-returnCode">
+</div>
+<label>
+  <input type="radio" name="db-suffixMode" value="0" checked>
+    SuffixMode=0 　編集後のtxtにSuffixを付けて出力
+</label>
+<br>
+<label>
+  <input type="radio" name="db-suffixMode" value="1" >
+    SuffixMode=1 　編集後のtxtからSuffixを取って出力
+</label>
+
+<button onclick="fetchSettingInfo()">設定を読み込み</button>
+<br>
+<button onclick="saveSettingInfo()">設定を書き込み</button>
+
 
 <script>
-
 //起動時：設定ファイルから値を読み込んで入力欄に反映
 window.onload = async function () {
   try {
@@ -137,7 +175,40 @@ async function saveConfig() {
     alert("設定の保存に失敗しました");
   }
 }
-</script>
 
+//DBから一覧を取るボタン
+async function fetchSettingInfo() {
+  const res = await fetch("/api/wx/settings");
+}
+
+//DBに登録するボタン  
+async function saveSettingInfo() {
+const body = {
+  settingName: document.getElementById("db-settingName").value,
+  endfileFolderPath: document.getElementById("db-endfileFolderPath").value,
+  txtFolderPath: document.getElementById("db-txtFolderPath").value,
+  tempFolderPath: document.getElementById("db-tempFolderPath").value,
+  returnCode: document.getElementById("db-returnCode").value,
+  suffixmode: document.querySelector('input[name="db-suffixMode"]:checked').value=== "1"
+};
+
+  try {
+    const res = await fetch("/api/wx/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      alert("DBに設定を保存しました");
+    } else {
+      alert("DBへの設定の保存に失敗しました");
+    }
+  } catch(e) {
+    alert("DBへの設定の保存に失敗しました");    
+  }
+}
+
+</script>
 </body>
 </html>
